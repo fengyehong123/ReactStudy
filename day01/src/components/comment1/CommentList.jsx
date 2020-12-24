@@ -30,7 +30,7 @@ export default class CommentList extends React.Component {
   
       return (
         <div>
-          <h1 className='cmtlist-titile'>评论列表案例</h1>
+          <h1 className='title'>评论列表案例</h1>
           {/* 我们可以直接在JSX语法内部,使用数组的map函数来遍历数组的每一项,并使用map来返回操作后的最新数组 */}
           {
             this.state.cmts.map((item, i) => {
