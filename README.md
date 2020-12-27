@@ -385,3 +385,11 @@ React中导入的样式都是全局的,但是组件和组件之间的样式可�
 **UI组件库的按需导入**
 1. 安装插件
 `npm install babel-plugin-import -D`
+
+2. 在.babelrc配置文件中添加下面的配置
+```js
+    {
+        "presets": ["env", "stage-0", "react"],
+        "plugins": ["transform-runtime", ["import", {"libraryName": "antd", "style": "css"}]]
+    }
+```
