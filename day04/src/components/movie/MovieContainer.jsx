@@ -1,7 +1,7 @@
 import React from 'react'
 
 // 布局相关的组件
-import { Layout, Menu, Icon } from 'antd';
+import { Layout, Menu} from 'antd';
 const { SubMenu } = Menu;
 const { Header, Content, Sider } = Layout;
 // 导入路由相关的组件
@@ -19,7 +19,6 @@ export default class MovieContainer extends React.Component {
     render() {
         return (
             <Layout style={{ height: '100%' }}>
-
                 <Sider width={200} style={{ background: '#fff' }}>
                     <Menu
                         mode="inline"

@@ -38,7 +38,12 @@ export default class App extends React.Component {
                             defaultSelectedKeys={[window.location.hash.split("/")[1]]}
                                 指定默认选中的选项卡,具体默认选中哪个选项卡是由路由地址决定的
                         */}
-                        <Menu theme="dark" mode="horizontal" defaultSelectedKeys={[window.location.hash.split("/")[1]]}>
+                        <Menu 
+                            theme="dark" 
+                            mode="horizontal" 
+                            defaultSelectedKeys={[window.location.hash.split("/")[1]]}
+                            style={{ lineHeight: '64px' }}
+                        >
                             <Menu.Item key="home">
                                 {/* 添加路由地址 */}
                                 <Link to="/home">首页</Link>
@@ -51,20 +56,20 @@ export default class App extends React.Component {
                             </Menu.Item>
                         </Menu>
                     </Header>
-
+                    
                     {/* 中间的内容区域 */}
-                    <Content style={{ backgroundColor: '#fff', flex: 1 }}>
+                    <Layout style={{ backgroundColor: '#fff', flex: 1 }}>
                         {/* 放置路由组件 */}
                         <Route path="/home" component={HomeContainer}></Route>
-                        <Route path="/about" component={AboutContainer}></Route>
                         <Route path="/movie" component={MovieContainer}></Route>
-                    </Content>
+                        <Route path="/about" component={AboutContainer}></Route>
+                    </Layout>
 
                     {/* Footer底部区域 */}
                     <Footer style={{ textAlign: 'center' }}>
                         传智播客 ©2017 黑马程序员
                     </Footer>
-                </Layout>,
+                </Layout>
             </HashRouter>
         );
     }

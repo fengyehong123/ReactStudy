@@ -1,5 +1,4 @@
 import React from 'react'
-
 // 导入UI组件
 import { Spin, Alert } from 'antd'
 // 导入我们抽出去的组件
@@ -16,13 +15,14 @@ export default class MovieList extends React.Component {
             // 当前展示第几页的数据
             nowPage: parseInt(props.match.params.page) || 1,
             // 每页显示多少条数据
-            pageSize: 14,
+            pageSize: 12,
             // 当前电影分类下,总共有多少条数据
             total: 0,
             // 数据是否正在加载,如果为true则表示数据正在加载
             isLoading: true,
             // 保存一下要获取的电影的类型(如果类型是nowPlaying,type就是1;否则type就是2)
-            movieType: props.match.params.type == "nowPlaying" ? "1" : "2",
+            // movieType: props.match.params.type == "nowPlaying" ? "1" : "2",  // 如果我们从第三方网站获取数据的话,就用这个
+            movieType: props.match.params.type,
         };
     }
 
@@ -31,6 +31,23 @@ export default class MovieList extends React.Component {
             在React中,我们可以使用fetch_API来获取数据,fetch_API是基于Promise来封装的
         */
         this.loadMovieListByTypeAndPage();
+    }
+
+    // 组件将要接收新属性
+    UNSAFE_componentWillReceiveProps(nextProps) {
+
+        // 每当地址栏发生变化的时候,我们就重置state当中的参数项,重置完毕之后,就可以发起新的数据请求了
+        this.setState({
+            // 又要重新加载电影数据了
+            isLoading: true,
+            // 要获取第几页的数据
+            nowPage: parseInt(nextProps.match.params.page) || 1,
+            // 获取电影类型
+            movieType: nextProps.match.params.type,
+        }, function() {
+            // 改变完组件的数据之后,进行回调操作
+            this.loadMovieListByTypeAndPage();
+        })
     }
 
     // 根据电影类型和页码来获取电影数据
@@ -50,8 +67,15 @@ export default class MovieList extends React.Component {
             this.getMovieDataFromWebSite(url, headersParam); 
         */ 
 
-        // 从本地的json文件读取我们提前准备好的数据
-        const data = require('../test_data/in_theaters.json');
+        // 根据电影的类型从本地的json文件读取我们提前准备好的数据
+        let data = null;
+        if(this.state.movieType == "nowPlaying") {
+            data = require('../test_data/in_theaters.json');
+        } else if(this.state.movieType == "comingSoon") {
+            data = require('../test_data/coming_soon.json');
+        } else {
+            data = require('../test_data/top250.json');
+        }
         // 我们使用setTimeout函数来模拟查询到了数据
         setTimeout(() => {
             this.setState({
@@ -63,6 +87,46 @@ export default class MovieList extends React.Component {
                 total: data.total,
             });
         }, 2000)
+    }
+
+    render() {
+        return (
+            <div>
+                {/* 进入该组件的时候,就调用该方法 */}
+                {this.renderList()}
+            </div>
+        );
+    }
+
+    /*
+        渲染电影列表的方法
+    */
+    renderList = () => {
+        // 如果数据正在加载中,就返回一个提示正在加载的组件
+        if(this.state.isLoading) {
+            return (
+                <Spin tip="Loading...">
+                    <Alert 
+                        message="正在请求电影列表" 
+                        description="精彩内容,马上呈现..." 
+                        type="info"
+                    >
+
+                    </Alert>
+                </Spin>
+            );
+        } else {
+            return (
+                <div style={{display: 'flex', flexWrap: 'wrap'}}>
+                    {this.state.movies.map(item => {
+                        return (
+                            // 每循环一次,就新创建一个电影项
+                            <MovieItem {...item} key={item.id}></MovieItem>
+                        );
+                    })}
+                </div>
+            );
+        }
     }
 
     // 从第三方网站中获取电影信息
@@ -93,43 +157,4 @@ export default class MovieList extends React.Component {
         })
     }
 
-    /*
-        渲染电影列表的方法
-    */
-    renderList = () => {
-        // 如果数据正在加载中,就返回一个提示正在加载的组件
-        if(this.state.isLoading) {
-            return (
-                <Spin tip="Loading...">
-                    <Alert 
-                        message="正在请求电影列表" 
-                        description="精彩内容,马上呈现..." 
-                        type="info"
-                    >
-
-                    </Alert>
-                </Spin>
-            );
-        } else {
-            return (
-                <div>
-                    {this.state.movies.map(item => {
-                        return (
-                            // 每循环一次,就新创建一个电影项
-                            <MovieItem {...item} key={item.id}></MovieItem>
-                        );
-                    })}
-                </div>
-            );
-        }
-    }
-
-    render() {
-        return (
-            <div>
-                {/* 进入该组件的时候,就调用该方法 */}
-                {this.renderList()}
-            </div>
-        );
-    }
 }
