@@ -1,6 +1,6 @@
 import React from 'react'
 // 导入UI组件
-import { Spin, Alert } from 'antd'
+import { Spin, Alert, Pagination } from 'antd'
 // 导入我们抽出去的组件
 import MovieItem from './MovieItem.jsx'
 
@@ -117,16 +117,47 @@ export default class MovieList extends React.Component {
             );
         } else {
             return (
-                <div style={{display: 'flex', flexWrap: 'wrap'}}>
-                    {this.state.movies.map(item => {
-                        return (
-                            // 每循环一次,就新创建一个电影项
-                            <MovieItem {...item} key={item.id}></MovieItem>
-                        );
-                    })}
+                <div>
+                    <div style={{display: 'flex', flexWrap: 'wrap'}}>
+                        {this.state.movies.map(item => {
+                            return (
+                                /*
+                                    每循环一次,就新创建一个电影项
+                                    history={this.props.history}
+                                        把history传入组件中,让组件可以获取history.push()方法实现点击跳转到详情页
+                                */ 
+                                <MovieItem {...item} key={item.id} history={this.props.history}></MovieItem>
+                            );
+                        })}
+                    </div>
+                    {/* 
+                        分页组件
+                        onChange
+                            点击分页组件所触发的事件
+                    */}
+                    <Pagination 
+                        defaultCurrent={this.state.nowPage} 
+                        pageSize={this.state.pageSize} 
+                        total={this.state.total} 
+                        onChange={this.pageChanged}
+                    />
                 </div>
             );
         }
+    }
+
+    // 当页码改变的时候,加载新一页的数据
+    pageChanged = (page) => {
+        /*
+            改变地址栏的地址,重新进行访问(因为我们现在的数据是写死的,所以即使点击分页上的按钮,数据还是不会变化的)
+            但是由于我们手动的使用了BOM对象实现了跳转,这样不好,最好使用路由的方法进行编程式导航
+            window.location.href = `/#/movie/${this.state.movieType}/${page}`
+        */ 
+
+        // 使用react-router-dom 实现编程式导航
+        // this.props.history.push是react中自带的对象
+        this.props.history.push(`/movie/${this.state.movieType}/${page}`)
+        
     }
 
     // 从第三方网站中获取电影信息

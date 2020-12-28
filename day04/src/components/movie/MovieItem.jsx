@@ -11,7 +11,7 @@ export default class MovieItem extends React.Component {
 
     render() {
         return (
-            <div className={styles.box}>
+            <div className={styles.box} onClick={this.goDetail}>
                 <img src={this.props.images.small.replace("img3.douban.com", "img1.douban.com")} alt="" className={styles.img} />
                 <h4>电影名称: {this.props.title}</h4>
                 <h4>上映年份: {this.props.year} 年</h4>
@@ -20,5 +20,9 @@ export default class MovieItem extends React.Component {
                 <Rate disabled defaultValue={this.props.rating.average / 2}></Rate>
             </div>
         );
+    }
+
+    goDetail = () => {
+        this.props.history.push(`/movie/detail/${this.props.id}`)
     }
 }
