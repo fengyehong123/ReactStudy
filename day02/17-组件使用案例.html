@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>React组件的使用案例</title>
+<script src="https://cdn.staticfile.org/react/16.4.0/umd/react.development.js"></script>
+<script src="https://cdn.staticfile.org/react-dom/16.4.0/umd/react-dom.development.js"></script>
+<script src="https://cdn.staticfile.org/babel-standalone/6.26.0/babel.min.js"></script>
+<style>
+    body {
+        padding: 5px
+    }
+</style>
+</head>
+<body>
+    <div id="container"></div>
+</body>
+<script type="text/babel">
+
+    // 产品数据
+    const PRODUCTS = [
+        {category: 'Sporting Goods', price: '$49.99', stocked: true, name: 'Football'},
+        {category: 'Sporting Goods', price: '$9.99', stocked: true, name: 'Baseball'},
+        {category: 'Sporting Goods', price: '$29.99', stocked: false, name: 'Basketball'},
+        {category: 'Electronics', price: '$99.99', stocked: true, name: 'iPod Touch'},
+        {category: 'Electronics', price: '$399.99', stocked: false, name: 'iPhone 5'},
+        {category: 'Electronics', price: '$199.99', stocked: true, name: 'Nexus 7'}
+    ];
+
+    // 为每一个产品类别展示标题
+    class ProductCategoryRow extends React.Component {
+
+        render() {
+
+            // 从父组件中获取产品种类
+            const category = this.props.category;
+            return (
+                <tr>
+                    <th colSpan="2">{category}</th>
+                </tr>
+            );
+        }
+    }
+
+    // 每一行展示一个产品
+    class ProductRow extends React.Component {
+
+        render() {
+            
+            // 从父组件中获取产品的信息
+            const product = this.props.product;
+
+            // 如果产品有库组的话,就显示普通的产品名称.如果产品没有库存的话,就显示红色的产品名称
+            const name = product.stocked ? product.name :
+                <span style={{color: 'red'}}>
+                    {product.name}
+                </span>;
+
+            return (
+                <tr>
+                    <td>{name}</td>
+                    <td>{product.price}</td>
+                </tr>
+            );
+        }
+    }
+
+    // 展示数据内容并根据用户输入筛选结果
+    class ProductTable extends React.Component {
+
+        render() {
+
+            // 父组件传递给子组件的值
+            const filterText = this.props.filterText;
+            const inStockOnly = this.props.inStockOnly;
+
+            // 用来存放每一行展示组件的数组
+            const rows = [];
+            // 产品种类的类型
+            let lastCategory = null;
+            
+            // 对所有的产品进行遍历
+            this.props.products.forEach((product) => {
+
+                // 当用户输入的关键字在产品列表中不存在的时候
+                if (product.name.indexOf(filterText) === -1) {
+                    return;
+                }
+                // 当产品已经没有库存的时候
+                if (inStockOnly && !product.stocked) {
+                    return;
+                }
+
+                // 如果当前种类的商品已经遍历完毕的话,就把商品的名称放到产品展示标题的组件中
+                if (product.category !== lastCategory) {
+                    rows.push(<ProductCategoryRow category={product.category} key={product.category} />);
+                }
+
+                // 将产品信息放入产品展示组件中
+                rows.push(<ProductRow product={product} key={product.name} />);
+                // 产品的类型
+                lastCategory = product.category;
+            });
+            
+            // 渲染区域
+            return (
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>{rows}</tbody>
+                </table>
+            );
+        }
+    }
+
+    // 接受所有的用户输入的组件
+    class SearchBar extends React.Component {
+
+        constructor(props) {
+            super(props);
+            // 改变函数中this的指向
+            this.handleFilterTextChange = this.handleFilterTextChange.bind(this);
+            this.handleInStockChange = this.handleInStockChange.bind(this);
+        }
+        
+        handleFilterTextChange(e) {
+            /*
+                相当于通过回调函数的方式,调用父组件中的状态改变事件
+                e是子组件中onchang事件触发的对象
+            */ 
+            this.props.onFilterTextChange(e.target.value);
+        }
+        
+        handleInStockChange(e) {
+            this.props.onInStockChange(e.target.checked);
+        }
+
+        render() {
+
+            // 父组件传递给子组件的数据
+            const filterText = this.props.filterText;
+            const inStockOnly = this.props.inStockOnly;
+
+            return (
+                <form>
+                    {/*React中的事件需要使用驼峰命名方式*/}
+                    <input type="text" placeholder="Search..." value={filterText} onChange={this.handleFilterTextChange} />
+                    <p>
+                        <input type="checkbox" checked={inStockOnly} onChange={this.handleInStockChange} />
+                        {' '}
+                        Only show products in stock
+                    </p>
+                </form>
+            );
+        }
+    }
+
+    // 根组件,是整个示例应用的整体
+    class FilterableProductTable extends React.Component {
+
+        constructor(props) {
+            super(props);
+
+            // 状态数据
+            this.state = {
+                // 用户输入的关键词
+                filterText: '',
+                // 是否只显示有库存的
+                inStockOnly: false
+            };
+
+            // 改变函数中this的指向,使this指向当前class,而不是函数本身
+            this.handleFilterTextChange = this.handleFilterTextChange.bind(this);
+            this.handleInStockChange = this.handleInStockChange.bind(this);
+        }
+
+        /*
+            输入关键词改变事件,这个事件传递给子组件,
+            在子组件中使用,就相当于通过回调函数的方式,
+            在子组件中调用了父组件中的状态改变事件,
+            从而实现通过子组件修改父组件中的数据状态
+        */ 
+        handleFilterTextChange(filterText) {
+            this.setState({
+                filterText: filterText
+            });
+        }
+        
+        // 是否只显示存储状态改变事件
+        handleInStockChange(inStockOnly) {
+            this.setState({
+                inStockOnly: inStockOnly
+            })
+        }
+
+        render() {
+            return (
+                <div>
+                    {/*用户输入组件*/}
+                    <SearchBar filterText={this.state.filterText} inStockOnly={this.state.inStockOnly} 
+                        onFilterTextChange={this.handleFilterTextChange} 
+                        onInStockChange={this.handleInStockChange} />
+                    {/*
+                        产品展示组件
+                        传入
+                            产品列表的原始数据
+                            过滤关键词
+                            是否只显示有货的flag
+                    */}
+                    <ProductTable products={this.props.products} filterText={this.state.filterText} inStockOnly={this.state.inStockOnly} />
+                </div>
+            );
+        }
+    }
+
+    ReactDOM.render(
+        <FilterableProductTable products={PRODUCTS} />,
+        document.getElementById('container')
+    );
+</script>
+</html>
