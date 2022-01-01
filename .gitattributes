@@ -1,2 +1,0 @@
-/ReactStudy/project/hkzf_v1/db/hkzf_db.sql filter=lfs diff=lfs merge=lfs -text
-/ReactStudy/project/hkzf_v1/data/houses.json filter=lfs diff=lfs merge=lfs -text
