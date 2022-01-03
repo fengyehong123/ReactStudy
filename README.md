@@ -371,6 +371,36 @@ React中导入的样式都是全局的,但是组件和组件之间的样式可�
     }
 ```
 
+4.项目中配置基础路由
+```js
+import React from "react";
+// 导入自定义的组件
+import CityList from './pages/CityList'
+import Home from './pages/Home'
+// 导入路由组件
+import {BrowserRouter, Route, Link} from 'react-router-dom'
+
+function App() {
+  return (
+    // 要想使用路由,需要使用Router包裹根组件
+    <BrowserRouter>
+      <div className="App">
+
+        {/* 配置导航菜单,和路由一一对应 */}
+        <Link to="/home">首页</Link>
+        <Link to="/citylist">城市选择</Link>
+
+        {/* 配置路由所对应的组件 */}
+        <Route path="/home" component={Home}></Route>
+        <Route path="/citylist" component={CityList}></Route>
+      </div>
+    </BrowserRouter>
+  );
+}
+
+export default App;
+```
+
 **UI组件库的使用**
 1. 安装
 `npm install antd -S`
