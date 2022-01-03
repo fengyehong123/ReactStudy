@@ -1,0 +1,10 @@
+/* 设置字体图标大小 */
+.home .iconfont {
+    font-size: 20px;
+}
+
+/* 设置TabBar栏的位置 */
+.home .am-tab-bar-bar {
+    position: fixed;
+    bottom: 0;
+}

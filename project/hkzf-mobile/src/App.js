@@ -13,10 +13,6 @@ function App() {
     <BrowserRouter>
       <div className="App">
 
-        {/* 配置导航菜单,和路由一一对应 */}
-        <Link to="/home">首页</Link>
-        <Link to="/citylist">城市选择</Link>
-
         {/* 配置路由所对应的组件 */}
         <Route path="/home" component={Home}></Route>
         <Route path="/citylist" component={CityList}></Route>
