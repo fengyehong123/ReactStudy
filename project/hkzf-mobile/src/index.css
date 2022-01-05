@@ -11,3 +11,8 @@ body {
   /* 去掉轮播图Chrome浏览器的错误警告 */
   touch-action: pan-y;
 }
+
+/* 所有的h2标签都要把margin给去掉 */
+h2 {
+  margin: 0;
+}
