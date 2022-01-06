@@ -4,7 +4,7 @@ import { Carousel, Flex } from 'antd-mobile';
 // 导入axios
 import axios from 'axios'
 // 导入当前组件的css文件
-import './index.css'
+import './index.scss'
 
 // 导入导航菜单图片
 import Nav1 from '../../assets/images/nav-1.png'
