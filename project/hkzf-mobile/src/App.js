@@ -2,6 +2,8 @@ import React from "react";
 // 导入自定义的组件
 import CityList from './pages/CityList'
 import Home from './pages/Home'
+// 导入地图组件
+import Map from './pages/Map'
 // 导入路由组件
 import { BrowserRouter, Redirect, Route } from 'react-router-dom'
 // 导入antd-mobile的样式(在入口文件处全局导入一次)
@@ -18,10 +20,14 @@ function App() {
           路由重定向,当我们访问默认地址的时候,重定向到/home路由,显示Index组件
           render: 是一个函数prop,用于指定要渲染的内容
           Redirect组件用于实现路由重定向,to属性指定要跳转到的路由地址
+          ⏹有Tabbar的组件需要放到Home组件中,在Home组件中使用子路由
         */}
         <Route exact path="/" render={() => <Redirect to="/home" />}></Route>
         <Route path="/home" component={Home}></Route>
+
+        {/* ⏹没有Tabbar的组件和Home组件平级 */}
         <Route path="/citylist" component={CityList}></Route>
+        <Route path="/map" component={Map}></Route>
       </div>
     </BrowserRouter>
   );

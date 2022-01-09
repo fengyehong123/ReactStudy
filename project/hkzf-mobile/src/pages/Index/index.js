@@ -165,11 +165,12 @@ export default class Index extends React.Component {
             <div className="index">
                 {/* 
                     之所以要在轮播图的外面包裹一层div,
-                    是为了解决轮播图资源还没有获取到,
+                    是为了解决轮
+                    播图资源还没有获取到,
                     导航菜单从顶部落到底部的一闪而过的问题
                 */}
                 <div className="swiper">
-                    {/* 轮播图 */}
+                    {/* ⏹轮播图 */}
                     {
                         // 只有将轮播图加载完毕之后,才会进行渲染
                         this.state.isSwiperLoaded ?
@@ -185,15 +186,45 @@ export default class Index extends React.Component {
                             {this.renderSwipers()}
                         </Carousel> : ''
                     }
+
+                    {/* ⏹搜索框 */}
+                    <Flex className="search-box">
+                        {/* 左侧白色区域 */}
+                        <Flex className="search">
+                            {/* 位置 */}
+                            <div
+                                className="location"
+                                // 点击之后改变地址栏
+                                onClick={() => this.props.history.push('/citylist')}
+                            >
+                                <span className="name">上海</span>
+                                <i className="iconfont icon-arrow" />
+                            </div>
+
+                            {/* 搜索表单 */}
+                            <div
+                                className="form"
+                                onClick={() => this.props.history.push('/search')}
+                            >
+                                <i className="iconfont icon-seach" />
+                                <span className="text">请输入小区或地址</span>
+                            </div>
+                        </Flex>
+                        {/* 右侧地图图标 */}
+                        <i
+                            className="iconfont icon-map"
+                            onClick={() => this.props.history.push('/map')}
+                        />
+                    </Flex>
                 </div>
 
-                {/* 导航菜单 */}
+                {/* ⏹导航菜单 */}
                 <Flex className="nav">
                     {/* 使用Flex布局组件 */}
                     {this.renderNavs()}
                 </Flex>
 
-                {/* 租房小组 */}
+                {/* ⏹租房小组 */}
                 <div className="group">
                     <h3 className="group-title">
                         租房小组 <span className="more">更多</span>
@@ -223,7 +254,7 @@ export default class Index extends React.Component {
                     />
                 </div>
                 
-                {/* 最新资讯 */}
+                {/* ⏹最新资讯 */}
                 <div className="news">
                     <h3 className="group-title">最新资讯</h3>
                     {/* WingBlank组件,用来设置页面两侧的留白 */}
