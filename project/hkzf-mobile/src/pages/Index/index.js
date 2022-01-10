@@ -50,7 +50,9 @@ export default class Index extends React.Component {
         // 租房小组的数据
         groups: [],
         // 最新资讯
-        news: []
+        news: [],
+        // 当前城市名称
+        curCityName: ''
     }
 
     // 钩子函数,装载完成,在render之后才会被调用
@@ -61,6 +63,20 @@ export default class Index extends React.Component {
         this.getGroups();
         // 一进入页面,就获取最新资讯
         this.getNews();
+        // 通过IP定位获取到当前城市的名称(以下方法为百度地图的API)
+        const currentCity = new window.BMap.LocalCity();
+        currentCity.get(async (res) => {
+            /*
+                res.name为调用百度地图API获取到的当前城市的信息
+                由于API接口只能返回北上广深的城市信息,因此当前城市若不是北上广深的话,默认返回上海的信息
+            */ 
+            const result = await axios.get(`http://localhost:8080/area/info?name=${res.name}`);
+            this.setState(() => {
+                return {
+                    curCityName: result.data.body.label
+                }
+            });
+        })
     }
 
     // 获取轮播图数据的方法
@@ -197,7 +213,8 @@ export default class Index extends React.Component {
                                 // 点击之后改变地址栏
                                 onClick={() => this.props.history.push('/citylist')}
                             >
-                                <span className="name">上海</span>
+                                {/* 当前城市名称 */}
+                                <span className="name">{this.state.curCityName}</span>
                                 <i className="iconfont icon-arrow" />
                             </div>
 

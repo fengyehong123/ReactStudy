@@ -12,6 +12,7 @@ export default class Map extends React.Component {
             因此我们在声明周期的钩子函数中,初始化百度地图实例
             ❗在react脚手架中全局对象需要使用window来访问,否则会造成ESLint校验错误
         */
+        // 创建百度地图实例
         const map = new window.BMap.Map('container');
         // 设置中心点坐标
         const point = new window.BMap.Point(116.404, 39.915);
