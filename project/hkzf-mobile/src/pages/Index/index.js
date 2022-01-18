@@ -6,6 +6,9 @@ import axios from 'axios'
 // 导入当前组件的scss文件
 import './index.scss'
 
+// 导入utils中获取当前定位城市的方法
+import { getCurrentCity } from '../../utils'
+
 // 导入导航菜单图片
 import Nav1 from '../../assets/images/nav-1.png'
 import Nav2 from '../../assets/images/nav-2.png'
@@ -56,27 +59,22 @@ export default class Index extends React.Component {
     }
 
     // 钩子函数,装载完成,在render之后才会被调用
-    componentDidMount() {
+    async componentDidMount() {
+
         // 一进入页面,就调用获取轮播图数据的方法
         this.getSwipers();
         // 一进入页面,就调用获取租房小组的方法
         this.getGroups();
         // 一进入页面,就获取最新资讯
         this.getNews();
-        // 通过IP定位获取到当前城市的名称(以下方法为百度地图的API)
-        const currentCity = new window.BMap.LocalCity();
-        currentCity.get(async (res) => {
-            /*
-                res.name为调用百度地图API获取到的当前城市的信息
-                由于API接口只能返回北上广深的城市信息,因此当前城市若不是北上广深的话,默认返回上海的信息
-            */ 
-            const result = await axios.get(`http://localhost:8080/area/info?name=${res.name}`);
-            this.setState(() => {
-                return {
-                    curCityName: result.data.body.label
-                }
-            });
-        })
+
+        // 调用工具类中获取当前城市定位的方法
+        const {label} = await getCurrentCity();
+        this.setState(() => {
+            return {
+                curCityName: label
+            }
+        });
     }
 
     // 获取轮播图数据的方法

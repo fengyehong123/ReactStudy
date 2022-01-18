@@ -2,6 +2,9 @@ import React from 'react';
 import axios from 'axios';
 import { NavBar } from 'antd-mobile';
 
+// 导入utils中获取当前定位城市的方法
+import {getCurrentCity} from '../../utils'
+
 import './index.scss'
 
 /*
@@ -13,10 +16,14 @@ import './index.scss'
 */ 
 const formatCityData = (list) => {
 
-    // 城市列表数据
+    /*
+        城市列表数据cityList
+        {
+            a: [{}, {}],
+            b: [{}, {}, {}, ...]
+        }
+    */
     const cityList = {};
-    // 城市索引数据
-    const cityIndex = [];
 
     /*
         1. 遍历list数组
@@ -26,9 +33,25 @@ const formatCityData = (list) => {
         5. 如果没有,就先创建一个数组,然后把当前城市信息添加到数组中
     */
     for(const [, item] of list.entries()) {
+
+        // 获取城市的首字母
         const first = item.short.substr(0, 1);
-        console.log(first);
+
+        // 判断城市列表中是否有该城市
+        if (cityList[first]) {
+            // 如果有该城市,就直接添加
+            cityList[first].push(item);
+        } else {
+            // 如果没有该城市,就创建数组,然后把城市信息添加到数组中
+            cityList[first] = [item];
+        }
     }
+
+    /*
+        根据城市列表数据cityList,获取城市索引数据
+        Object.keys(): 可以获取对象中的所有的key
+    */
+    const cityIndex = Object.keys(cityList).sort();
 
     return {
         cityList,
@@ -46,11 +69,30 @@ export default class CityList extends React.Component {
 
     // 获取城市列表数据的方法
     async getCityList() {
+
         const res = await axios.get('http://localhost:8080/area/city?level=1');
-        console.log(res);
-        // 通过解构得到城市列表和城市索引数据
+
+        // ⏹ 通过解构得到城市列表和城市索引数据
         const {cityList, cityIndex} = formatCityData(res.data.body);
-        console.log(cityList, cityIndex);
+
+        /*
+            ⏹ 获取热门城市数据
+            将数据添加到cityList中,将索引添加到cityIndex中
+        */
+        const hotRes = await axios.get('http://localhost:8080/area/hot');
+
+        // 添加热门城市数据到城市列表中
+        cityList['hot'] = hotRes.data.body;
+        // 使用unshift方法来添加hot索引到数组的开头(需要保证顺序)
+        cityIndex.unshift('hot');
+
+        // ⏹ 获取当前定位城市(使用工具类中封装好的方法)
+        const curCity = await getCurrentCity();
+       
+        // 将当前定位城市添加到cityList中
+        cityList['#'] = [curCity];
+        // 将当前定位城市的索引添加到cityIndex中
+        cityIndex.unshift('#');
     }
 
     render() {
