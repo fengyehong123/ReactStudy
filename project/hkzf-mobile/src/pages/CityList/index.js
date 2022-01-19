@@ -2,6 +2,9 @@ import React from 'react';
 import axios from 'axios';
 import { NavBar } from 'antd-mobile';
 
+// 导入长列表渲染的组件
+import { List, AutoSizer } from 'react-virtualized';
+
 // 导入utils中获取当前定位城市的方法
 import {getCurrentCity} from '../../utils'
 
@@ -61,6 +64,22 @@ const formatCityData = (list) => {
 
 export default class CityList extends React.Component {
 
+    constructor(props) {
+        super(props);
+        this.state = {
+            /*
+                城市列表数据
+                {
+                    a: [{}, {}],
+                    b: [{}, {}, {}, ...]
+                }
+            */
+            cityList: {},
+            // 城市列表索引数据
+            cityIndex: []
+        }
+    }
+
     // 一进入页面,就获取数据
     componentDidMount() {
         // 获取城市数据
@@ -93,6 +112,38 @@ export default class CityList extends React.Component {
         cityList['#'] = [curCity];
         // 将当前定位城市的索引添加到cityIndex中
         cityIndex.unshift('#');
+
+        // 将组装好的城市列表数据放到组件的状态数据中
+        this.setState(() => {
+            return {
+                cityList: cityList,
+                cityIndex: cityIndex
+            }
+        })
+    }
+
+    /*
+        List组件渲染每一行数据的渲染函数
+        函数的返回值就表示最终渲染在页面中的内容
+    */
+    rowRenderer({
+        // 每条数据唯一的key值
+        key,
+        // 每一个列表项的索引号
+        index,
+        // 当前项是否正在滚动中(正在滚动该值为true,否则为false)
+        isScrolling,
+        // 当前项在List中是可见的
+        isVisible,
+        // 注意:重点属性,一定要给每一行数据添加该样式! 作用:指定每一行的位置
+        style,
+    }) {
+        return (
+            <div key={key} style={style} className="city">
+                <div className="title">S</div>
+                <div className="name">上海</div>
+            </div>
+        );
     }
 
     render() {
@@ -107,6 +158,26 @@ export default class CityList extends React.Component {
                 >
                     城市选择
                 </NavBar>
+
+                {/* 使用AutoSizer组件解决自动获取页面宽度和高度的问题 */}
+                <AutoSizer>
+                    {
+                        /*  
+                            通过render-props模式获取到AutoSizer组件暴露的width和height属性
+                            城市列表组件
+                        */ 
+                        ({width, height}) => <List
+                            width={width}
+                            height={height}
+                            // 获取组件中城市索引的长度
+                            rowCount={this.state.cityIndex.length}
+                            // 指定每一行的高度
+                            rowHeight={100}
+                            // 指定城市列表的渲染函数
+                            rowRenderer={this.rowRenderer}
+                        />
+                    }
+                </AutoSizer>
             </div>
         )
     }
