@@ -62,6 +62,28 @@ const formatCityData = (list) => {
     }
 }
 
+// 索引(A,B等)的高度
+const TITLE_HEIGHT = 36;
+// 每个城市名称的高度
+const NAME_HEIGHT = 50;
+
+/*
+    封装处理字母索引的方法
+*/
+const formatCityIndex = (letter) => {
+
+    switch (letter) {
+
+        case '#':
+            return '当前定位';
+        case 'hot':
+            return '热门城市';
+        default:
+            // 将小写字母的索引转换为大写字母
+            return letter.toUpperCase();
+    }
+}
+
 export default class CityList extends React.Component {
 
     constructor(props) {
@@ -123,10 +145,11 @@ export default class CityList extends React.Component {
     }
 
     /*
+        将rowRenderer函数,改为箭头函数形式,解决函数内部this的指向问题(我们需要通过this来获取组件的state)
         List组件渲染每一行数据的渲染函数
         函数的返回值就表示最终渲染在页面中的内容
     */
-    rowRenderer({
+    rowRenderer = ({
         // 每条数据唯一的key值
         key,
         // 每一个列表项的索引号
@@ -137,11 +160,26 @@ export default class CityList extends React.Component {
         isVisible,
         // 注意:重点属性,一定要给每一行数据添加该样式! 作用:指定每一行的位置
         style,
-    }) {
+    }) => {
+
+        /*
+            获取每一行的字母索引列表和城市数据对象
+            将rowRenderer函数修改为箭头函数(获取进行this绑定)的形式才能获取到state
+        */ 
+        const { cityIndex, cityList } = this.state;
+        // 根据列表的索引号获取城市index
+        const letter = cityIndex[index];
+
+        // 获取指定字母索引下的城市列表数据
+        console.log(cityList[letter]);
+
         return (
             <div key={key} style={style} className="city">
-                <div className="title">S</div>
-                <div className="name">上海</div>
+                <div className="title">{formatCityIndex(letter)}</div>
+                {
+                    // 通过城市索引获取索引所对应的城市list,并进行遍历渲染
+                    cityList[letter].map(item => <div className="name" key={item.value}>{item.label}</div>)
+                }
             </div>
         );
     }
