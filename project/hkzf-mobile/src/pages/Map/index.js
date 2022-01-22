@@ -1,4 +1,6 @@
 import React from 'react'
+// 导入封装好的NavHeader组件
+import NavHeader from '../../components/NavHeader'
 // 导入样式
 import './index.scss'
 
@@ -21,9 +23,21 @@ export default class Map extends React.Component {
         map.centerAndZoom(point, 15);
     }
 
+    /*
+        1. 封装NavHeader组件实现城市选择,地图找房页面的复用
+        2. 在components目录中创建组件NavHeader/index.js
+        3. 在该组件中封装antd-mobile组件库中的NavBar组件
+        4. 在地图找房页面中使用封装好的NavHeader组件实现顶部导航栏功能
+        5. 使用NavHeader组件,替换城市选择页面的NavBar组件
+    */
     render() {
         return (
             <div className="map">
+                {/* 顶部导航栏组件 */}
+                <NavHeader>
+                    {/* 通过组件子节点的方式传递参数 */}
+                    地图找房
+                </NavHeader>
                 {/* 百度地图的容器 */}
                 <div id="container"></div>
             </div>

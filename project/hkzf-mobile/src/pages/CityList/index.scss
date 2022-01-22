@@ -1,21 +1,15 @@
 .cityList {
 
-    // 设置根元素高度占满整个屏幕,确保AutoSizer组件可以自动获取剩余高度和宽度
-    height: 100%;
-    padding-top: 45px;
+  // 设置根元素高度占满整个屏幕,确保AutoSizer组件可以自动获取剩余高度和宽度
+  height: 100%;
+  padding-top: 45px;
 
-    // 导航栏的字体颜色和背景色
-    .navbar {
-        margin-top: -45px;
-        color: #333;
-        background-color: #f6f5f6;
-    }
-    // 导航栏的标题颜色
-    .am-navbar-title{
-        color: #333;
-    }
+  // 导航栏组件样式
+  .navbar {
+    margin-top: -45px;
+  }
 
-    // 城市列表
+  // 城市列表
   .city {
       
     .title {

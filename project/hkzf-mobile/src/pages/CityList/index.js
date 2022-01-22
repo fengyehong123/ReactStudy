@@ -1,12 +1,15 @@
 import React from 'react';
 import axios from 'axios';
-import { NavBar, Toast } from 'antd-mobile';
+import { Toast } from 'antd-mobile';
 
 // 导入长列表渲染的组件
 import { List, AutoSizer } from 'react-virtualized';
 
 // 导入utils中获取当前定位城市的方法
 import {getCurrentCity} from '../../utils'
+
+// 导入封装好的NavHeader组件
+import NavHeader from '../../components/NavHeader'
 
 import './index.scss'
 
@@ -305,15 +308,11 @@ export default class CityList extends React.Component {
     render() {
         return (
             <div className="cityList">
-                <NavBar
-                    className="navbar"
-                    mode="light"
-                    icon={<i className="iconfont icon-back"/>}
-                    // 点击左侧的图标按钮,返回上一个页面
-                    onLeftClick={() => this.props.history.go(-1)}
-                >
+
+                {/* 使用自己封装好的导航栏组件 */}
+                <NavHeader>
                     城市选择
-                </NavBar>
+                </NavHeader>
 
                 {/* 使用AutoSizer组件解决自动获取页面宽度和高度的问题 */}
                 <AutoSizer>
