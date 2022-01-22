@@ -16,8 +16,13 @@ body {
 /* 所有的h2标签和P标签都要把margin给去掉 */
 h2,
 h3,
-p {
+p,
+ul {
   margin: 0;
+}
+
+ul {
+  list-style: none;
 }
 
 /* 
