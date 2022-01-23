@@ -7,6 +7,17 @@ import styles from './index.module.css'
 // 解决脚手架中全局变量访问的问题
 const BMap = window.BMap;
 
+// 覆盖物样式
+const labelStyle = {
+    cursor: 'pointer',
+    border: '0px solid rgb(255, 0, 0)',
+    padding: '0px',
+    whiteSpace: 'nowrap',
+    fontSize: '12px',
+    color: 'rgb(255, 255, 255)',
+    textAlign: 'center'
+}
+
 export default class Map extends React.Component {
 
     // 钩子函数
@@ -44,14 +55,60 @@ export default class Map extends React.Component {
         myGeo.getPoint(label, function(point) {
 
             // point为解析出的经纬度
-            if (point) {
-                // 初始化地图,同时设置展示级别
-                map.centerAndZoom(point, 11);
-
-                // 在地图上添加常用控件
-                map.addControl(new BMap.NavigationControl());
-                map.addControl(new BMap.ScaleControl());
+            if (!point) {
+                return;
             }
+            
+            // 初始化地图,同时设置展示级别
+            map.centerAndZoom(point, 11);
+
+            // 在地图上添加常用控件
+            map.addControl(new BMap.NavigationControl());
+            map.addControl(new BMap.ScaleControl());
+
+            /*
+                1. 创建Label实例对象.
+                2. 调用Label的setContent()方法,传入HTML结构,修改HTML内容的样式
+                3. 调用setStyle()方法设置样式.
+                4. 给文本覆盖物添加单击事件
+                4. 在map对象上调用addOverlay()方法,将文本覆盖物添加到地图中.
+            */
+            // 实例对象的配置项
+            const opts = {
+                // 画面上的位置
+                position: point,
+                // 画面上的位置偏移量,调整覆盖物在画面上的位置
+                offset: new BMap.Size(-35, -35)
+            }
+
+            /*
+                创建Label实例对象
+                label设置setContent后,第一个参数中设置的文本内容就失效了,因此直接清空即可
+            */ 
+            const label = new BMap.Label('', opts);
+
+            /*
+                设置房源覆盖物的内容(通过在Label中自定义HTML,创建覆盖物)
+                我们在普通的html中也是用了css module,css module可以使用在任何css中
+            */ 
+            label.setContent(`
+                <div class="${styles.bubble}">
+                    <p class="${styles.name}">浦东</p>
+                    <p>99套</p>
+                </div>
+            `)
+
+            // 设置覆盖物的样式(labelStyle是我们自定义的覆盖物的样式)
+            label.setStyle(labelStyle);
+
+            // 给地图上的覆盖物添加单击事件,保证单击覆盖物之后,能放大页面
+            label.addEventListener('click', () => {
+                console.log('房源覆盖物被点击了!');
+            })
+
+            // 添加覆盖物到地图中(overlay是覆盖物的意思)
+            map.addOverlay(label);
+
         }, label);
     }
 
@@ -63,7 +120,7 @@ export default class Map extends React.Component {
         5. 使用NavHeader组件,替换城市选择页面的NavBar组件
     */
     render() {
-        
+
         return (
             <div className={styles.map}>
                 {/* 顶部导航栏组件 */}
