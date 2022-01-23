@@ -25,8 +25,24 @@ import Map from './pages/Map'
   ⏹ CSS Modules
       原理: 通过对CSS类名进行重命名,保证每个类名的唯一性,从而避免样式冲突问题
       实现方式: webpack的css-loader插件
+
       命名方式: BEM(Block块,Element元素,Modifier三部分组成)命名规范,比如.list_item_active
         在React脚手架中演化为: 文件名,类名,hash(随机)三部分,我们只需要指定类名即可
+
+      使用:
+        1. 创建名为[name].module.css的样式文件(React脚手架中的约定,与普通CSS作区分)
+            例如: index.module.css
+        2. 组件中导入该样式文件
+            import styles from './index.modules.css'
+        3. 通过styles对象访问对象名中的样式名称来设置样式
+            <div className={styles.test}>测试</div>
+
+      注意: 
+        1. 推荐使用驼峰命名法,而非下划线方式来取类名
+        2. 在样式文件中修改当前组件的样式时,推荐使用单个类名设置样式,不使用嵌套样式
+          推荐: .narBar {}
+          不推荐: .narbar .test {}
+        3. 对于组件中已经有的全局样式(比如 .am-navbar-title),需要使用:global()来指定
 */
 // 导入路由组件
 import { BrowserRouter, Redirect, Route } from 'react-router-dom'

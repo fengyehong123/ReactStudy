@@ -1,0 +1,15 @@
+.map {
+    height: 100%;
+    padding-top: 45px;
+}
+
+.container {
+    height: 100%;
+}
+
+/* 
+    .am-navbar是全局组件中的样式
+*/
+.map :global(.am-navbar) {
+    margin-top: -45px;
+}

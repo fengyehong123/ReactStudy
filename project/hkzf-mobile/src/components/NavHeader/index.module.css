@@ -1,0 +1,13 @@
+/* 导航栏的字体颜色和背景色 */
+.navBar {
+    color: #333;
+    background-color: #f6f5f6;
+}
+
+/* 
+    .am-navbar-title样式是antd-mobile组件库中NavBar的样式
+    属于组件中已经有的全局样式,需要通过:global()的方式来指定
+*/
+.navBar :global(.am-navbar-title) {
+    color: #333;
+}

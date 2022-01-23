@@ -5,8 +5,10 @@ import { withRouter } from 'react-router-dom'
 // 导入props校验的包
 import PropTypes from 'prop-types'
 
-// 导入自定义封装组件的样式
-import './index.scss'
+// ⏹ 导入自定义封装组件的样式(普通的css样式导入)
+// import './index.scss'
+// ⏹ 使用CSS Module的方式进行导入
+import styles from './index.module.css'
 
 /*
     自定义封装组件
@@ -30,7 +32,8 @@ function NavHeader({ children, history, onLeftClick }) {
 
     return (
         <NavBar
-            className="navbar"
+            // 使用css module的方式进行样式导入指定
+            className={styles.navBar}
             mode="light"
             icon={<i className="iconfont icon-back"/>}
             // 如果用户传入了onLeftClick参数,就使用用户自定义的行为,否则使用默认点击行为
