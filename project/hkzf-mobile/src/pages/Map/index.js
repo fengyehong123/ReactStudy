@@ -1,4 +1,6 @@
 import React from 'react'
+// 导入axios
+import axios from 'axios'
 // 导入封装好的NavHeader组件
 import NavHeader from '../../components/NavHeader'
 // 导入样式(CSS Module)
@@ -30,12 +32,12 @@ export default class Map extends React.Component {
     // 初始化地图
     initMap() {
         /*
-            1. 从本地缓存中获取当前定位城市
+            1. 从本地缓存中获取当前定位城市的名称和唯一标识符
             2. 使用地址解析器解析当前城市坐标
             3. 调用centerAndZoom()方法在地图中展示当前城市,并设置缩放级别为11.
             4. 在地图中展示该城市,并添加比例尺和平移缩放控件
         */
-        const { label } = JSON.parse(localStorage.getItem('hkzf_city'));
+        const { label, value } = JSON.parse(localStorage.getItem('hkzf_city'));
     
 
         /*
@@ -52,7 +54,7 @@ export default class Map extends React.Component {
         const myGeo = new BMap.Geocoder();
 
         // 将汉字的地址名的解析结果显示在地图上,并调整地图的视野
-        myGeo.getPoint(label, function(point) {
+        myGeo.getPoint(label, async function(point) {
 
             // point为解析出的经纬度
             if (!point) {
@@ -67,48 +69,88 @@ export default class Map extends React.Component {
             map.addControl(new BMap.ScaleControl());
 
             /*
-                1. 创建Label实例对象.
-                2. 调用Label的setContent()方法,传入HTML结构,修改HTML内容的样式
-                3. 调用setStyle()方法设置样式.
-                4. 给文本覆盖物添加单击事件
-                4. 在map对象上调用addOverlay()方法,将文本覆盖物添加到地图中.
+                1. 获取房源数据
+                2. 遍历数据,创建覆盖物,给每一个覆盖物添加唯一标识
+                3. 给覆盖物添加单击事件
+                4. 在单击事件中,获取到当前单击的覆盖物的唯一标识
+                5. 放大地图(级别为13),调用clearOverlays()方法清除掉当前的覆盖物
             */
-            // 实例对象的配置项
-            const opts = {
-                // 画面上的位置
-                position: point,
-                // 画面上的位置偏移量,调整覆盖物在画面上的位置
-                offset: new BMap.Size(-35, -35)
+            // 根据区域id,获取当前区域下所有的房源数据
+            const res = await axios.get(`http://localhost:8080/area/map?id=${value}`);
+            
+            // 根据房源数据创建房源覆盖物
+            for (const [, item] of res.data.body.entries()) {
+
+                /*
+                    1. 创建Label实例对象.
+                    2. 调用Label的setContent()方法,传入HTML结构,修改HTML内容的样式
+                    3. 调用setStyle()方法设置样式.
+                    4. 给文本覆盖物添加单击事件
+                    4. 在map对象上调用addOverlay()方法,将文本覆盖物添加到地图中.
+                */
+                
+                // 解构出需要用到的信息
+                const { 
+                    // 房源经纬度
+                    coord: { longitude, latitude },
+                    // 区域名称
+                    label: areaName, 
+                    // 房源数量
+                    count,
+                    // 房源数据的唯一id标识
+                    value
+                }  = item;
+
+                // 覆盖物的坐标对象
+                const areaPoint = new BMap.Point(longitude, latitude);
+
+                // 实例对象的配置项
+                const opts = {
+                    // 房源数据在画面上的位置(根据房源的经纬度,通过百度地图的API创建)
+                    position: areaPoint,
+                    // 画面上的位置偏移量,调整覆盖物在画面上的位置
+                    offset: new BMap.Size(-35, -35)
+                }
+
+                /*
+                    创建Label实例对象
+                    label设置setContent后,第一个参数中设置的文本内容就失效了,因此直接清空即可
+                */ 
+                const label = new BMap.Label('', opts);
+
+                // 给Label添加一个唯一标识
+                label.id = value;
+
+                /*
+                    设置房源覆盖物的内容(通过在Label中自定义HTML,创建覆盖物)
+                    我们在普通的html中也是用了css module,css module可以使用在任何css中
+                */ 
+                label.setContent(`
+                    <div class="${styles.bubble}">
+                        <p class="${styles.name}">${areaName}</p>
+                        <p>${count}套</p>
+                    </div>
+                `)
+
+                // 设置覆盖物的样式(labelStyle是我们自定义的覆盖物的样式)
+                label.setStyle(labelStyle);
+
+                // 给地图上的覆盖物添加单击事件,保证单击覆盖物之后,能放大页面
+                label.addEventListener('click', () => {
+                    
+                    // 以当前被点击的覆盖物为中心放大地图
+                    map.centerAndZoom(areaPoint, 13);
+
+                    // 解决清除覆盖物时,百度地图API的JS文件自身报错的问题
+                    setTimeout(() => {
+                        // 放大完成之后,清除覆盖物信息
+                        map.clearOverlays();
+                    }, 0);
+                })
+
+                // 添加覆盖物到地图中(overlay是覆盖物的意思)
+                map.addOverlay(label);
             }
-
-            /*
-                创建Label实例对象
-                label设置setContent后,第一个参数中设置的文本内容就失效了,因此直接清空即可
-            */ 
-            const label = new BMap.Label('', opts);
-
-            /*
-                设置房源覆盖物的内容(通过在Label中自定义HTML,创建覆盖物)
-                我们在普通的html中也是用了css module,css module可以使用在任何css中
-            */ 
-            label.setContent(`
-                <div class="${styles.bubble}">
-                    <p class="${styles.name}">浦东</p>
-                    <p>99套</p>
-                </div>
-            `)
-
-            // 设置覆盖物的样式(labelStyle是我们自定义的覆盖物的样式)
-            label.setStyle(labelStyle);
-
-            // 给地图上的覆盖物添加单击事件,保证单击覆盖物之后,能放大页面
-            label.addEventListener('click', () => {
-                console.log('房源覆盖物被点击了!');
-            })
-
-            // 添加覆盖物到地图中(overlay是覆盖物的意思)
-            map.addOverlay(label);
-
         }, label);
     }
 
