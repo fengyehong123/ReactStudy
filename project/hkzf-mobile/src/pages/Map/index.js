@@ -49,12 +49,14 @@ export default class Map extends React.Component {
         */
         // 创建百度地图实例
         const map = new BMap.Map('container');
+        // 地图实例对象放到this中,方便在其他方法中通过this获取到地图对象
+        this.map = map;
         
         // 创建地址解析器实例(该解析器可以根据传入的地址名称解析出名称所对应的经纬度)
         const myGeo = new BMap.Geocoder();
 
         // 将汉字的地址名的解析结果显示在地图上,并调整地图的视野
-        myGeo.getPoint(label, async function(point) {
+        myGeo.getPoint(label, (point) => {
 
             // point为解析出的经纬度
             if (!point) {
@@ -68,90 +70,79 @@ export default class Map extends React.Component {
             map.addControl(new BMap.NavigationControl());
             map.addControl(new BMap.ScaleControl());
 
-            /*
-                1. 获取房源数据
-                2. 遍历数据,创建覆盖物,给每一个覆盖物添加唯一标识
-                3. 给覆盖物添加单击事件
-                4. 在单击事件中,获取到当前单击的覆盖物的唯一标识
-                5. 放大地图(级别为13),调用clearOverlays()方法清除掉当前的覆盖物
-            */
-            // 根据区域id,获取当前区域下所有的房源数据
-            const res = await axios.get(`http://localhost:8080/area/map?id=${value}`);
+            // 在地图上渲染覆盖物的入口
+            this.renderOverlays(value);
             
-            // 根据房源数据创建房源覆盖物
-            for (const [, item] of res.data.body.entries()) {
-
-                /*
-                    1. 创建Label实例对象.
-                    2. 调用Label的setContent()方法,传入HTML结构,修改HTML内容的样式
-                    3. 调用setStyle()方法设置样式.
-                    4. 给文本覆盖物添加单击事件
-                    4. 在map对象上调用addOverlay()方法,将文本覆盖物添加到地图中.
-                */
-                
-                // 解构出需要用到的信息
-                const { 
-                    // 房源经纬度
-                    coord: { longitude, latitude },
-                    // 区域名称
-                    label: areaName, 
-                    // 房源数量
-                    count,
-                    // 房源数据的唯一id标识
-                    value
-                }  = item;
-
-                // 覆盖物的坐标对象
-                const areaPoint = new BMap.Point(longitude, latitude);
-
-                // 实例对象的配置项
-                const opts = {
-                    // 房源数据在画面上的位置(根据房源的经纬度,通过百度地图的API创建)
-                    position: areaPoint,
-                    // 画面上的位置偏移量,调整覆盖物在画面上的位置
-                    offset: new BMap.Size(-35, -35)
-                }
-
-                /*
-                    创建Label实例对象
-                    label设置setContent后,第一个参数中设置的文本内容就失效了,因此直接清空即可
-                */ 
-                const label = new BMap.Label('', opts);
-
-                // 给Label添加一个唯一标识
-                label.id = value;
-
-                /*
-                    设置房源覆盖物的内容(通过在Label中自定义HTML,创建覆盖物)
-                    我们在普通的html中也是用了css module,css module可以使用在任何css中
-                */ 
-                label.setContent(`
-                    <div class="${styles.bubble}">
-                        <p class="${styles.name}">${areaName}</p>
-                        <p>${count}套</p>
-                    </div>
-                `)
-
-                // 设置覆盖物的样式(labelStyle是我们自定义的覆盖物的样式)
-                label.setStyle(labelStyle);
-
-                // 给地图上的覆盖物添加单击事件,保证单击覆盖物之后,能放大页面
-                label.addEventListener('click', () => {
-                    
-                    // 以当前被点击的覆盖物为中心放大地图
-                    map.centerAndZoom(areaPoint, 13);
-
-                    // 解决清除覆盖物时,百度地图API的JS文件自身报错的问题
-                    setTimeout(() => {
-                        // 放大完成之后,清除覆盖物信息
-                        map.clearOverlays();
-                    }, 0);
-                })
-
-                // 添加覆盖物到地图中(overlay是覆盖物的意思)
-                map.addOverlay(label);
-            }
         }, label);
+    }
+
+    /*
+        渲染覆盖物入口
+        1. 接收区域id参数,获取该区域下的房源数据
+        2. 获取房源类型以及下级地图的缩放级别
+    */
+    async renderOverlays(id) {
+
+        // 获取出房源数据
+        const res = await axios.get(`http://localhost:8080/area/map?id=${id}`);
+        const data = res.data.body;
+        
+        // 调用,获取缩放级别和类型
+        const { nextZoom, type } = this.getTypeAndZoom();
+
+        // 遍历房源数据,创建覆盖物
+        for (const item of data.values()) {
+            // 根据房源信息,覆盖物类型,覆盖物缩放级别来创建覆盖物
+            this.createOverlays(item, nextZoom, type)
+        }
+    }
+
+    /*
+        计算要绘制的覆盖物的类型和下一个缩放级别
+        区: 11,范围: >=10 < 12
+        镇: 13,范围: >=12 < 14
+        小区: 15,范围: >= 14 < 16
+    */
+    getTypeAndZoom() {
+
+        // 下一个缩放级别和覆盖物类型
+        let nextZoom, type;
+
+        // 通过this获取到map地图实例,然后获取到地图缩放级别
+        const zoom = this.map.getZoom();
+
+        if (zoom >= 10 && zoom < 12) {
+            // 当前缩放范围是区级别的话,点击覆盖物之后,下一个缩放级别就是镇级别的
+            nextZoom = 13;
+            type = 'circle';
+        } else if (zoom >= 12 && zoom < 14) {
+            // 当前缩放范围是镇级别的话,点击覆盖物之后,下一个缩放级别就是小区级别的
+            nextZoom = 15;
+            type = 'circle'
+        } else if (zoom >= 14 && zoom < 16) {
+            // 当前缩放级别是小区的话,就无法再缩放了,因此不需要缩放级别了.只需要设置覆盖物类型为长方形
+            type = 'rect';
+        }
+
+        // 将当前缩放级别和覆盖物类型返回
+        return {
+            nextZoom,
+            type
+        }
+    }
+
+    /*
+        创建覆盖物
+    */
+    createOverlays() {
+
+    }
+
+    /*
+        创建小区覆盖物
+    */
+    createRect() {
+
     }
 
     /*
