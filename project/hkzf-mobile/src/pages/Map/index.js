@@ -93,7 +93,7 @@ export default class Map extends React.Component {
         // 遍历房源数据,创建覆盖物
         for (const item of data.values()) {
             // 根据房源信息,覆盖物类型,覆盖物缩放级别来创建覆盖物
-            this.createOverlays(item, nextZoom, type)
+            this.createOverlays(item, nextZoom, type);
         }
     }
 
@@ -134,8 +134,95 @@ export default class Map extends React.Component {
     /*
         创建覆盖物
     */
-    createOverlays() {
+    createOverlays(data, zoom, type) {
 
+        // 从房源数据中解构出需要用到的信息
+        const { 
+            // 房源经纬度
+            coord: { longitude, latitude },
+            // 区域名称
+            label: areaName, 
+            // 房源数量
+            count,
+            // 房源数据的唯一id标识
+            value
+        }  = data;
+
+        // 覆盖物的坐标对象
+        const areaPoint = new BMap.Point(longitude, latitude);
+
+        if (type === 'circle') {
+            // 创建区或者镇的覆盖物
+            this.createCircle(areaPoint, areaName, count, value, zoom);
+        } else {
+            // 创建小区的覆盖物
+            this.createRect(areaPoint, areaName, count, value);
+        }
+    }
+
+    /*
+        创建区,镇覆盖物
+    */
+    createCircle(areaPoint, areaName, count, id, zoom) {
+        /*
+            1. 创建Label实例对象.
+            2. 调用Label的setContent()方法,传入HTML结构,修改HTML内容的样式
+            3. 调用setStyle()方法设置样式.
+            4. 给文本覆盖物添加单击事件
+            4. 在map对象上调用addOverlay()方法,将文本覆盖物添加到地图中.
+        */
+        // 实例对象的配置项
+        const opts = {
+            // 房源数据在画面上的位置(根据房源的经纬度,通过百度地图的API创建)
+            position: areaPoint,
+            // 画面上的位置偏移量,调整覆盖物在画面上的位置
+            offset: new BMap.Size(-35, -35)
+        }
+
+        /*
+            创建Label实例对象
+            label设置setContent后,第一个参数中设置的文本内容就失效了,因此直接清空即可
+        */ 
+        const label = new BMap.Label('', opts);
+
+        // 给Label添加一个唯一标识
+        label.id = id;
+
+        /*
+            设置房源覆盖物的内容(通过在Label中自定义HTML,创建覆盖物)
+            我们在普通的html中也是用了css module,css module可以使用在任何css中
+        */ 
+        label.setContent(`
+            <div class="${styles.bubble}">
+                <p class="${styles.name}">${areaName}</p>
+                <p>${count}套</p>
+            </div>
+        `)
+
+        // 设置覆盖物的样式(labelStyle是我们自定义的覆盖物的样式)
+        label.setStyle(labelStyle);
+
+        /*
+            给地图上的覆盖物添加单击事件,保证单击覆盖物之后,能放大页面,
+            在新的页面中重新获取房源数据进行渲染
+        */ 
+        label.addEventListener('click', () => {
+
+            // 调用renderOverlays方法,获取该区域下面的房源数据
+            this.renderOverlays(id);
+            
+            // 以当前被点击的覆盖物为中心,根据缩放级别来放大地图
+            this.map.centerAndZoom(areaPoint, zoom);
+
+            // 解决清除覆盖物时,百度地图API的JS文件自身报错的问题
+            setTimeout(() => {
+                // 放大完成之后,清除覆盖物信息
+                this.map.clearOverlays();
+            }, 0);
+        })
+
+        // 添加覆盖物到地图中(overlay是覆盖物的意思)
+        this.map.addOverlay(label);
     }
 
     /*
