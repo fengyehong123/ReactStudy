@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 // 导入axios
 import axios from 'axios'
 // 导入封装好的NavHeader组件
@@ -21,6 +22,16 @@ const labelStyle = {
 }
 
 export default class Map extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            // 小区下的房源列表
+            housesList: [],
+            // 表示是否展示房源列表
+            isShowList: false
+        };
+    }
 
     // 钩子函数
     componentDidMount() {
@@ -228,8 +239,112 @@ export default class Map extends React.Component {
     /*
         创建小区覆盖物
     */
-    createRect() {
+    createRect(areaPoint, areaName, count, id) {
+        
+        /*
+            创建Label实例对象
+            label设置setContent后,第一个参数中设置的文本内容就失效了,因此直接清空即可
+        */ 
+        const label = new BMap.Label('', {
+            // 房源数据在画面上的位置(根据房源的经纬度,通过百度地图的API创建)
+            position: areaPoint,
+            // 画面上的位置偏移量,调整覆盖物在画面上的位置
+            offset: new BMap.Size(-50, -28)
+        });
 
+        // 给Label添加一个唯一标识
+        label.id = id;
+
+        /*
+            设置房源覆盖物的内容(通过在Label中自定义HTML,创建覆盖物)
+            我们在普通的html中也是用了css module,css module可以使用在任何css中
+        */ 
+        label.setContent(`
+            <div class="${styles.rect}">
+                <span class="${styles.housename}">${areaName}</span>
+                <span class="${styles.housenum}">${count}套</span>
+                <i class="${styles.arrow}"></i>
+            </div>
+        `)
+
+        // 设置覆盖物的样式(labelStyle是我们自定义的覆盖物的样式)
+        label.setStyle(labelStyle);
+
+        /*
+            给地图上的覆盖物添加单击事件,保证单击覆盖物之后,能放大页面,
+            在新的页面中重新获取房源数据进行渲染
+        */ 
+        label.addEventListener('click', () => {
+
+            /*
+                1. 在单击事件中获取到小区的房源数据
+                2. 展示房源列表
+                3. 渲染获取到的房源列表
+                4. 调用地图的panBy()方法,移动地图到中间位置
+                    公式:
+                        垂直位移：(window.innerHeight - 330) / 2 - target.clientY
+                        水平平移：window.innerWidth / 2 - target.clientX
+                5. 监听地图的movestart事件,在地图移动的时候隐藏房源列表
+            */
+            // 获取房源数据
+            this.getHousesList(id);
+        })
+
+        // 添加覆盖物到地图中(overlay是覆盖物的意思)
+        this.map.addOverlay(label);
+    }
+
+    // 获取小区的房源数据
+    async getHousesList(id) {
+        // 获取房源数据
+        const res = await axios.get(`http://localhost:8080/houses?cityId=${id}`);
+
+        this.setState(() => {
+            return {
+                // 解构出的具体房屋数据
+                housesList: res.data.body.list,
+                // 是否展示房源列表
+                isShowList: true
+            }
+        });
+    }
+
+    // 封装渲染房屋列表的方法
+    renderHousesList() {
+
+        return (
+            // 遍历房源数据,进行渲染
+            this.state.housesList.map(item => (
+                <div className={styles.house} key={item.houseCode}>
+                    {/* 房源的图片 */}
+                    <div className={styles.imgWrap}>
+                        <img className={styles.img} src={`http://localhost:8080${item.houseImg}`} alt="" />
+                    </div>
+                    {/* 房源的内容 */}
+                    <div className={styles.content}>
+                        <h3 className={styles.title}>{item.title}</h3>
+                        <div className={styles.desc}>{item.desc}</div>
+                        {/* 房源特性的标签 */}
+                        <div>
+                            {/* 一个房源可能会有多个标签,我们遍历渲染 */}
+                            {item.tags.map((tag, index) => {
+                                const tagClass = 'tag' + (index + 1);
+                                return (
+                                    // 渲染不同标签所拥有的样式
+                                    <span className={[styles.tag, styles[tagClass]].join(' ')} key={tag} >
+                                        {tag}
+                                    </span>
+                                )
+                            })}
+                        </div>
+                        {/* 房源的价格 */}
+                        <div className={styles.price}>
+                            <span className={styles.priceNum}>{item.price}</span> 元/月
+                        </div>
+                    </div>
+                </div>
+            ))
+        )
     }
 
     /*
@@ -250,6 +365,24 @@ export default class Map extends React.Component {
                 </NavHeader>
                 {/* 百度地图的容器 */}
                 <div id="container" className={styles.container}></div>
+
+                {/* 
+                    房源列表
+                    当添加添加 styles.show 的时候,房屋列表才会被展示
+                */}
+                <div className={[styles.houseList, this.state.isShowList ? styles.show : ''].join(' ')}>
+                    <div className={styles.titleWrap}>
+                        <h1 className={styles.listTitle}>房屋列表</h1>
+                        <Link className={styles.titleMore} to="/home/list">
+                            更多房源
+                        </Link>
+                    </div>
+
+                    <div className={styles.houseItems}>
+                        {/* 房屋结构 */}
+                        {this.renderHousesList()}
+                    </div>
+                </div>
             </div>
         )
     }
