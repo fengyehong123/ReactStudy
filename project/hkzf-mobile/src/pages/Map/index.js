@@ -1,5 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+// 导入轻提示组件,使用组件中的loading效果
+import { Toast } from 'antd-mobile'
 // 导入axios
 import axios from 'axios'
 // 导入封装好的NavHeader组件
@@ -85,6 +87,19 @@ export default class Map extends React.Component {
             this.renderOverlays(value);
             
         }, label);
+
+        // 给地图绑定移动事件,当地图移动的时候,隐藏房源列表
+        map.addEventListener('movestart', () => {
+
+            // 只有当地图显示在页面上并且地图移动的时候,才会隐藏房源列表
+            if (this.state.isShowList) {
+                this.setState(() => {
+                    return {
+                        isShowList: false
+                    }
+                });
+            }
+        });
     }
 
     /*
@@ -94,17 +109,34 @@ export default class Map extends React.Component {
     */
     async renderOverlays(id) {
 
-        // 获取出房源数据
-        const res = await axios.get(`http://localhost:8080/area/map?id=${id}`);
-        const data = res.data.body;
-        
-        // 调用,获取缩放级别和类型
-        const { nextZoom, type } = this.getTypeAndZoom();
+        try {
+            /*
+            参数1: 加载时的提示文字
+            参数2: 多少秒之后,动画效果消失,当设置为0的时候,需要手动调用.hide()方法隐藏提示框
+            参数3: 关闭后的回调函数
+            参数4: 是否显示遮罩层
+            */
+            Toast.loading('加载中...', 0, null, false);
 
-        // 遍历房源数据,创建覆盖物
-        for (const item of data.values()) {
-            // 根据房源信息,覆盖物类型,覆盖物缩放级别来创建覆盖物
-            this.createOverlays(item, nextZoom, type);
+            // 获取出房源数据
+            const res = await axios.get(`http://localhost:8080/area/map?id=${id}`);
+            const data = res.data.body;
+
+            // 数据获取完成之后,关闭Loading效果
+            Toast.hide();
+            
+            // 调用,获取缩放级别和类型
+            const { nextZoom, type } = this.getTypeAndZoom();
+
+            // 遍历房源数据,创建覆盖物
+            for (const item of data.values()) {
+                // 根据房源信息,覆盖物类型,覆盖物缩放级别来创建覆盖物
+                this.createOverlays(item, nextZoom, type);
+            }
+
+        } catch {
+            // 当发生异常的时候,也隐藏加载效果
+            Toast.hide();
         }
     }
 
@@ -274,7 +306,7 @@ export default class Map extends React.Component {
             给地图上的覆盖物添加单击事件,保证单击覆盖物之后,能放大页面,
             在新的页面中重新获取房源数据进行渲染
         */ 
-        label.addEventListener('click', () => {
+        label.addEventListener('click', (e) => {
 
             /*
                 1. 在单击事件中获取到小区的房源数据
@@ -288,6 +320,14 @@ export default class Map extends React.Component {
             */
             // 获取房源数据
             this.getHousesList(id);
+
+            // 获取当前被点击项目的x和y轴的坐标数据
+            const target = e.changedTouches[0];
+            this.map.panBy(
+                // 计算房源数据覆盖物在地图上的中心点位置,移动到该位置
+                window.innerWidth / 2 - target.clientX,
+                (window.innerHeight - 330) / 2 - target.clientY
+            );
         })
 
         // 添加覆盖物到地图中(overlay是覆盖物的意思)
@@ -296,17 +336,27 @@ export default class Map extends React.Component {
 
     // 获取小区的房源数据
     async getHousesList(id) {
-        // 获取房源数据
-        const res = await axios.get(`http://localhost:8080/houses?cityId=${id}`);
 
-        this.setState(() => {
-            return {
-                // 解构出的具体房屋数据
-                housesList: res.data.body.list,
-                // 是否展示房源列表
-                isShowList: true
-            }
-        });
+        try {
+            Toast.loading('加载中...', 0, null, false);
+
+            // 获取房源数据
+            const res = await axios.get(`http://localhost:8080/houses?cityId=${id}`);
+
+            Toast.hide();
+
+            this.setState(() => {
+                return {
+                    // 解构出的具体房屋数据
+                    housesList: res.data.body.list,
+                    // 是否展示房源列表
+                    isShowList: true
+                }
+            });
+            
+        } catch (error) {
+            Toast.hide();
+        }
     }
 
     // 封装渲染房屋列表的方法
