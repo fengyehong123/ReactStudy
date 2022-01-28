@@ -1,9 +1,11 @@
 import React from 'react'
+// 导入项目的根URL
+import { BASE_URL } from '../../utils/url'
+// 导入我们自己创建好的axios实例
+import { API } from '../../utils/api'
 import { Link } from 'react-router-dom'
 // 导入轻提示组件,使用组件中的loading效果
 import { Toast } from 'antd-mobile'
-// 导入axios
-import axios from 'axios'
 // 导入封装好的NavHeader组件
 import NavHeader from '../../components/NavHeader'
 // 导入样式(CSS Module)
@@ -119,7 +121,7 @@ export default class Map extends React.Component {
             Toast.loading('加载中...', 0, null, false);
 
             // 获取出房源数据
-            const res = await axios.get(`http://localhost:8080/area/map?id=${id}`);
+            const res = await API.get(`/area/map?id=${id}`);
             const data = res.data.body;
 
             // 数据获取完成之后,关闭Loading效果
@@ -341,7 +343,7 @@ export default class Map extends React.Component {
             Toast.loading('加载中...', 0, null, false);
 
             // 获取房源数据
-            const res = await axios.get(`http://localhost:8080/houses?cityId=${id}`);
+            const res = await API.get(`/houses?cityId=${id}`);
 
             Toast.hide();
 
@@ -353,7 +355,7 @@ export default class Map extends React.Component {
                     isShowList: true
                 }
             });
-            
+
         } catch (error) {
             Toast.hide();
         }
@@ -368,7 +370,7 @@ export default class Map extends React.Component {
                 <div className={styles.house} key={item.houseCode}>
                     {/* 房源的图片 */}
                     <div className={styles.imgWrap}>
-                        <img className={styles.img} src={`http://localhost:8080${item.houseImg}`} alt="" />
+                        <img className={styles.img} src={`${BASE_URL}${item.houseImg}`} alt="" />
                     </div>
                     {/* 房源的内容 */}
                     <div className={styles.content}>

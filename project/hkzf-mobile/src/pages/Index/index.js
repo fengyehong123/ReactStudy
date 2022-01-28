@@ -1,8 +1,11 @@
 import React from 'react'
+// 导入项目的根URL
+import { BASE_URL } from '../../utils/url'
+// 导入我们自己创建好的axios实例
+import { API } from '../../utils/api'
 // 导入轮播图组件
 import { Carousel, Flex, Grid, WingBlank } from 'antd-mobile';
-// 导入axios
-import axios from 'axios'
+
 // 导入当前组件的scss文件
 import './index.scss'
 
@@ -80,7 +83,7 @@ export default class Index extends React.Component {
     // 获取轮播图数据的方法
     async getSwipers() {
         // 调用接口,获取轮播图的图片地址
-        const res = await axios.get('http://localhost:8080/home/swiper');
+        const res = await API.get(`/home/swiper`);
         this.setState(() => {
             return {
                 // 将轮播图的数据放到swipers列表中
@@ -93,7 +96,7 @@ export default class Index extends React.Component {
     // 获取租房小组数据的方法
     async getGroups() {
         // 调用API接口,获取小组数据
-        const res = await axios.get('http://localhost:8080/home/groups', {
+        const res = await API.get(`/home/groups`, {
             params: {
                 area: 'AREA|88cff55c-aaa4-e2e0'
             }
@@ -112,7 +115,7 @@ export default class Index extends React.Component {
     async getNews() {
         // 发送请求,获取数据
         const urlSearchParams = new URLSearchParams([['area', 'AREA|88cff55c-aaa4-e2e0']]);
-        const res = await axios.get(`http://localhost:8080/home/news?${urlSearchParams.toString()}`);
+        const res = await API.get(`/home/news?${urlSearchParams.toString()}`);
 
         // 更新状态
         this.setState(() => {
@@ -133,7 +136,7 @@ export default class Index extends React.Component {
                     style={{ display: 'inline-block', width: '100%', height: 212 }}
                 >
                     <img
-                        src={`http://localhost:8080${item.imgSrc}`}
+                        src={`${BASE_URL}${item.imgSrc}`}
                         alt=""
                         style={{ width: '100%', verticalAlign: 'top' }}
                     />
@@ -161,7 +164,7 @@ export default class Index extends React.Component {
         return this.state.news.map(item => (
             <div className="news-item" key={item.id}>
                 <div className="imgwrap">
-                    <img className="img" src={`http://localhost:8080${item.imgSrc}`} alt="" />
+                    <img className="img" src={`${BASE_URL}${item.imgSrc}`} alt="" />
                 </div>
                 <Flex className="content" direction="column" justify="between">
                     <h3 className="title">{item.title}</h3>
@@ -263,7 +266,7 @@ export default class Index extends React.Component {
                                     <span className="info">{item.desc}</span>
                                 </div>
                                 {/* 后端的图片地址 */}
-                                <img src={`http://localhost:8080${item.imgSrc}`} alt="" />
+                                <img src={`${BASE_URL}${item.imgSrc}`} alt="" />
                             </Flex>
                         )} 
                     />
