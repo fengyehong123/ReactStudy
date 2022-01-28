@@ -12,6 +12,9 @@ import './index.scss'
 // 导入utils中获取当前定位城市的方法
 import { getCurrentCity } from '../../utils'
 
+// 导入我们自定义的导航栏组件
+import SearchHeader from '../../components/SearchHeader'
+
 // 导入导航菜单图片
 import Nav1 from '../../assets/images/nav-1.png'
 import Nav2 from '../../assets/images/nav-2.png'
@@ -204,36 +207,11 @@ export default class Index extends React.Component {
                         </Carousel> : ''
                     }
 
-                    {/* ⏹搜索框 */}
-                    <Flex className="search-box">
-                        {/* 左侧白色区域 */}
-                        <Flex className="search">
-                            {/* 位置 */}
-                            <div
-                                className="location"
-                                // 点击之后改变地址栏
-                                onClick={() => this.props.history.push('/citylist')}
-                            >
-                                {/* 当前城市名称 */}
-                                <span className="name">{this.state.curCityName}</span>
-                                <i className="iconfont icon-arrow" />
-                            </div>
-
-                            {/* 搜索表单 */}
-                            <div
-                                className="form"
-                                onClick={() => this.props.history.push('/search')}
-                            >
-                                <i className="iconfont icon-seach" />
-                                <span className="text">请输入小区或地址</span>
-                            </div>
-                        </Flex>
-                        {/* 右侧地图图标 */}
-                        <i
-                            className="iconfont icon-map"
-                            onClick={() => this.props.history.push('/map')}
-                        />
-                    </Flex>
+                    {/* 
+                        ⏹搜索框
+                        使用了我们自定义封装的搜索框组件
+                    */}
+                    <SearchHeader cityName={this.state.curCityName} />
                 </div>
 
                 {/* ⏹导航菜单 */}

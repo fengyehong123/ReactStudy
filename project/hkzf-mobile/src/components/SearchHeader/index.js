@@ -9,10 +9,14 @@ import PropTypes from 'prop-types'
 import './index.scss'
 
 // 使用高阶组件包裹我们自定义的组件之后,才能获取到路由信息,才能解构出history
-function SearchHeader({ history, cityName }) {
+function SearchHeader({ history, cityName, className }) {
 
     return (
-        <Flex className="search-box">
+        /*
+            从外部传入className,给控件添加自定义的样式,
+            使用.join(' ')方法将数组转换为以空格分隔的字符串
+        */
+        <Flex className={["search-box", className || ''].join(' ')}>
             {/* 左侧白色区域 */}
             <Flex className="search">
                 {/* 位置 */}
