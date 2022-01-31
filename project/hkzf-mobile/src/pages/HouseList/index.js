@@ -3,6 +3,8 @@ import { Flex } from 'antd-mobile';
 
 // 导入我们自定义的导航栏组件
 import SearchHeader from '../../components/SearchHeader'
+// 导入条件筛选栏组件
+import Filter from './components/Filter'
 
 // 导入当前组件的样式
 import styles from './index.module.css'
@@ -23,6 +25,9 @@ export default class HouseList extends React.Component {
                     {/* 向组件中传递城市的名字 */}
                     <SearchHeader cityName={label} className={styles.searchHeader}></SearchHeader>
                 </Flex>
+
+                {/* 条件筛选栏组件 */}
+                <Filter></Filter>
                 
             </div>
         )
