@@ -60,7 +60,7 @@ export default class Filter extends Component {
     const { value } = JSON.parse(localStorage.getItem('hkzf_city'))
     const res = await API.get(`/houses/condition?id=${value}`)
     
-    // 将获取到的房源数据保存到组件的状态数据中
+    // 将获取到的房源数据过滤条件保存到组件的状态数据中
     this.setState({
       filtersData: res.data.body
     })
@@ -94,27 +94,64 @@ export default class Filter extends Component {
     })
   }
 
-  // 点击确定按钮,调用的函数
-  onSave = () => {
+  /*
+    点击确定按钮,调用的函数
+    type和value是子组件调用父组件中方法时,传入的参数
+  */ 
+  onSave = (type, value) => {
     // 隐藏对话框
     this.setState({
       openType: ''
     })
+
+    console.log(type, value);
   }
 
   // 渲染FilterPicker组件的方法
   renderFilterPicker() {
 
-    // 解构出当前点击的标题的类型
-    const { openType } = this.state;
+    /*
+      解构出当前点击的标题的类型
+      从filtersData中进一步解构出房源的过滤条件数据
+    */ 
+    const { openType, filtersData: { area, subway, rentType, price } } = this.state;
 
     // 当前被点击的标题是不是下面这三个之一的时候,不渲染组件
     if(!['area', 'mode', 'price'].includes(openType)) {
       return null;
     }
 
-    // 否则就渲染FilterPicker组件
-    return <FilterPicker onCancel={this.onCancel} onSave={this.onSave} />
+    // 组装FilterPicker组件中需要用到的数据
+    const map = new Map([
+      ['area', {
+        // 展示数据所用到的列数
+        cols: 3,
+        // 数据需要展示的数据
+        data: [area, subway]
+      }],
+      ['mode', {
+        cols: 1,
+        data: rentType
+      }],
+      ['price', {
+        cols: 1,
+        data: price
+      }]
+    ]);
+
+    // 根据openType来获取到当前条件下的过滤数据
+    const {cols, data: filterData} = map.get(openType);
+
+    // 渲染FilterPicker组件(我们向该组件中传递了数据源)
+    return (
+      <FilterPicker 
+        onCancel={this.onCancel} 
+        onSave={this.onSave} 
+        data={filterData} 
+        cols={cols} 
+        type={openType}
+      />
+    )
   }
 
   render() {
