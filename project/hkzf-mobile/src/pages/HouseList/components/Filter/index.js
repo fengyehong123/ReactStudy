@@ -212,21 +212,47 @@ export default class Filter extends Component {
       newTitleSelectedStatus[type] = false;
     }
 
+    // Filter组件最新的选中值
+    const newSelectedValues = {
+      // 解构出所有默认的选中值
+      ...this.state.selectedValues,
+      // 使用当前传入的选中值替换默认的选中值
+      [type]: value
+    }
+
+    // 根据Filter组件最新的选中值,构建房源筛选条件,构建完成的筛选条件需要传递给父组件HouseList
+    const filters = {};
+
+    // 构建各个标题的筛选条件
+    const { area, mode, price, more } = newSelectedValues;
+    // 构建区域的筛选条件
+    const areaKey = area[0];
+    let areaValue = 'null';
+    if (area.length === 3) {
+      areaValue = area[2] !== 'null' ? area[2] : area[1];
+    }
+    filters[areaKey] = areaValue;
+    
+    // 构建方式和租金的筛选条件
+    filters.mode = mode[0];
+    filters.price = price[0];
+
+    // 更多的筛选条件
+    filters.more = more.join(',');
+
+    // 调用父组件中传递来的方法,将子组件的数据传递给父组件
+    this.props.onFilter(filters);
+
     // 改变组件的状态
     this.setState(() => {
 
       return {
         // 将打开的对话框类型设置为空,隐藏对话框
         openType: '',
-        // 改变FilterPicker组件的默认选中值
-        selectedValues: {
-          // 解构出所有默认的选中值
-          ...this.state.selectedValues,
-          // 使用当前传入的选中值替换默认的选中值
-          [type]: value
-        },
         // 更新标题选中对象
-        titleSelectedStatus: newTitleSelectedStatus
+        titleSelectedStatus: newTitleSelectedStatus,
+        // 改变FilterPicker组件的默认选中值
+        selectedValues: newSelectedValues
       }
     })
   }
