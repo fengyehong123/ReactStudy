@@ -20,6 +20,7 @@ export default class FilterMore extends Component {
     selectedValues: []
   }
 
+  // Tag点击方法,将Tag对应的值保存到组件的状态中
   onTagClick(value) {
 
     const { selectedValues } = this.state;
@@ -55,11 +56,32 @@ export default class FilterMore extends Component {
       const isSelected = selectedValues.includes(item.value);
       return (
         <span key={item.value} className={[styles.tag, isSelected ? styles.tagActive: ''].join(' ')} 
+          // 将当前点击的Tag所对应的值通过onTagClick函数保存到组件的状态中
           onClick={() => this.onTagClick(item.value)}>
           {item.label}
         </span>
       )
     })
+  }
+
+  // 取消按钮的事件处理程序
+  onCancel = () => {
+
+    // 清空所有的选中值
+    this.setState(() => {
+      return {
+        selectedValues: []
+      }
+    })
+  }
+
+  // 点击确定按钮的处理方法
+  onOk = () => {
+    // 从父组件传递过来的数据中解构数据
+    const { type, onSave } = this.props;
+
+    // 传入参数(类型和当前组件选中的值),调用父组件传递来的方法
+    onSave(type, this.state.selectedValues);
   }
 
   render() {
@@ -96,8 +118,22 @@ export default class FilterMore extends Component {
           </dl>
         </div>
 
-        {/* 底部按钮 */}
-        <FilterFooter className={styles.footer} />
+        {/* 
+          底部按钮
+          1. 设置FilterFooter组件的取消按钮文字为: 清除
+          2. 点击取消按钮的时候,清空所有选中项的值(selectedValues: [])
+          3. 点击确定按钮的时候,将当前选中项的值和type传递给Filter父组件
+          4. 在Filter父组件的onSave方法中,接收传递过来的选中值,更新状态selectedValues
+          说明:
+            type和onSave都由父组件通过props传递给该组件
+        */}
+        <FilterFooter
+          className={styles.footer} 
+          cancelText="清除"
+          // 点击取消按钮的时候,清空所有的选中项目
+          onCancel={this.onCancel}
+          onOk={this.onOk}
+        />
       </div>
     )
   }

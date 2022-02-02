@@ -273,7 +273,15 @@ export default class Filter extends Component {
       characteristic
     }
 
-    return <FilterMore data={data} />
+    return (
+      <FilterMore 
+        data={data}
+        // 当前标题的类型
+        type={openType}
+        // 父组件将保存方法传递给FilterMore子组件,当子组件点击确定按钮的时候,就可以把子组件选中的数据传递给父组件
+        onSave={this.onSave}
+      />
+    )
   }
 
   render() {

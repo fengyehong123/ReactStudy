@@ -28,7 +28,6 @@ export default class HouseList extends React.Component {
 
                 {/* 条件筛选栏组件 */}
                 <Filter></Filter>
-                
             </div>
         )
     }
