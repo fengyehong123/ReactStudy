@@ -14,9 +14,9 @@ export default class FilterPicker extends Component {
 
   constructor(props) {
     super(props);
-    // 当前组件的选中状态值
     this.state = {
-      value: null,
+      // 设置当前组件的默认选中值
+      value: props.defaultValue
     }
   }
 
@@ -38,7 +38,7 @@ export default class FilterPicker extends Component {
             value: 当前组件的选中的数值,如果我们不设置的话,当改变过滤条件的时候,会触发onchange事件
                    改变组件中的状态值value,从而导致组件重新渲染,从而导致我们选中的过滤条件不会被选中显示
         */}
-        <PickerView data={data} value={value} cols={cols} onChange={val => {
+        <PickerView data={data} value={value} cols={cols} onChange={(val) => {
           this.setState({
             value: val
           })

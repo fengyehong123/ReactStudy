@@ -8,7 +8,10 @@
 }
 
 /* 设置TabBar栏的位置 */
-.home .am-tab-bar-bar {
+.home .am-tab-bar {
+    height: 50px;
+    overflow: hidden;
     position: fixed;
     bottom: 0;
+    width: 100%;
 }

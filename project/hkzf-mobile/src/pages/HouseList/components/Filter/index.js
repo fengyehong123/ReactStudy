@@ -1,10 +1,11 @@
 import React, { Component } from 'react'
-// 导入自定义的axios
-import { API } from '../../../../utils/api'
 
 import FilterTitle from '../FilterTitle'
 import FilterPicker from '../FilterPicker'
 import FilterMore from '../FilterMore'
+
+// 导入自定义的axios
+import { API } from '../../../../utils/api'
 
 import styles from './index.module.css'
 
@@ -31,6 +32,16 @@ const titleSelectedStatus = {
   more: false
 }
 
+/*
+  FilterPicker和FilterMore组件的选中值
+*/
+const selectedValues = {
+  area: ['area', 'null'],
+  mode: ['null'],
+  price: ['null'],
+  more: []
+}
+
 export default class Filter extends Component {
 
   constructor(props) {
@@ -41,7 +52,9 @@ export default class Filter extends Component {
       // 控制FilterPicker或者FilterMore组件的展示或者隐藏
       openType: '',
       // 所有房源的筛选条件数据
-      filtersData: {}
+      filtersData: {},
+      // 控制FilterPicker组件的默认选中值
+      selectedValues
     }
 
     // 改变onTitleClick函数中的this指向问题
@@ -72,14 +85,58 @@ export default class Filter extends Component {
     当点击标题的时候,让当前点击的标题高亮并且展示当前标题所对应的对话框
   */ 
   onTitleClick(type) {
-    this.setState((prevState) => {
+
+    /*
+      1. 在标题点击事件onTitleClick方法中,获取到两个状态:标题选中状态对象和筛选条件的选中值对象
+      2. 根据当前标题选中状态对象,获取到一个新的标题选中状态对象(newTitleSelectedStatus)
+      3. 使用Object.keys()方法,遍历标题选中状态对象
+      4. 先判断是否是当前标题,如果是的话,就直接让该标题选中状态为true(高亮)
+      5. 否则,分别判断每个标题的选中值是否与默认值相同
+      6. 如果不同,就设置该标题的选中状态为true
+      7. 如果相同,就设置该标题的选中状态为false
+      8. 更新状态titleSelectedStatus的值为: newTitleSelectedStatus
+    */
+    const {
+      // 标题选中状态对象
+      titleSelectedStatus, 
+      // 标题选中值
+      selectedValues
+    } = this.state;
+
+    // 创建新的标题选中对象
+    const newTitleSelectedStatus = { ...titleSelectedStatus };
+    // 遍历标题选中状态对象
+    for (const [, item] of Object.keys(newTitleSelectedStatus).entries()) {
+
+      // 如果当前点击的标题栏对象和遍历的对象相同的话,就设置给高亮
+      if (item === type) {
+        // 高亮
+        newTitleSelectedStatus[item] = true;
+        continue;
+      }
+
+      // 其他未被点击的标题,根据标题名称获取出标题对应的选中值
+      const selectedVal = selectedValues[item];
+      if (item === 'area' && (selectedVal.length !== 2 || selectedVal[0] !== 'area')) {
+        // 高亮
+        newTitleSelectedStatus[item] = true;
+      } else if (item === 'mode' && selectedVal[0] !== 'null') {
+        // 高亮
+        newTitleSelectedStatus[item] = true;
+      } else if (item === 'price' && selectedVal[0] !== 'null') {
+        // 高亮
+        newTitleSelectedStatus[item] = true;
+      } else if (item === 'more') {
+
+      } else {
+        newTitleSelectedStatus[item] = false;
+      }
+    }
+
+    this.setState(() => {
       return {
-        titleSelectedStatus: {
-          // 获取当前对象中所有属性的值
-          ...prevState.titleSelectedStatus,
-          // 将当前点击的标题对象的状态改为true(使用了ES6的动态属性名)
-          [type]: true,
-        },
+        // 将新的标题选中对象赋给给组件的标题状态选中对象
+        titleSelectedStatus: newTitleSelectedStatus,
         // 根据当前点击的标题展示相应的对话框
         openType: type,
       }
@@ -99,12 +156,22 @@ export default class Filter extends Component {
     type和value是子组件调用父组件中方法时,传入的参数
   */ 
   onSave = (type, value) => {
-    // 隐藏对话框
-    this.setState({
-      openType: ''
-    })
 
-    console.log(type, value);
+    // 改变组件的状态
+    this.setState(() => {
+
+      return {
+        // 将打开的对话框类型设置为空,隐藏对话框
+        openType: '',
+        // 改变FilterPicker组件的默认选中值
+        selectedValues: {
+          // 解构出所有默认的选中值
+          ...this.state.selectedValues,
+          // 使用当前传入的选中值替换默认的选中值
+          [type]: value
+        }
+      }
+    })
   }
 
   // 渲染FilterPicker组件的方法
@@ -114,7 +181,14 @@ export default class Filter extends Component {
       解构出当前点击的标题的类型
       从filtersData中进一步解构出房源的过滤条件数据
     */ 
-    const { openType, filtersData: { area, subway, rentType, price } } = this.state;
+    const { 
+      openType, 
+      filtersData: { area, subway, rentType, price },
+      selectedValues
+    } = this.state;
+
+    // 获取FilterPicker组件的默认选中值
+    let defaultValue = selectedValues[openType];
 
     // 当前被点击的标题是不是下面这三个之一的时候,不渲染组件
     if(!['area', 'mode', 'price'].includes(openType)) {
@@ -144,14 +218,62 @@ export default class Filter extends Component {
 
     // 渲染FilterPicker组件(我们向该组件中传递了数据源)
     return (
-      <FilterPicker 
+      <FilterPicker
+        /*
+          问题: 在前端三个标题之间来回切换时,默认选中值不生效,当重新发开FilterPicker组件的时候,才会生效
+          分析: 两种操作方式的区别在于有没有重新创建FilterPicker组件.只要组件被重新创建,默认值的选中就会生效
+          原因: 不重新创建FilterPicker组件时,不会再次执行state初始化,这样也就无法获取最新的props
+          解决方法: 给FilterPicker组件添加key值为openType,这样在不同标题之间切换时,key的值都不相同,React内部
+          会在key不相同的时候,重新创建该组件,只要组件被重新创建,默认值的选中就会生效
+          下面的key={openType}就是为了解决该问题添加的
+        */
+        key={openType}
         onCancel={this.onCancel} 
         onSave={this.onSave} 
+        // 组件的过滤数据
         data={filterData} 
+        // 组件数据所占用的列数
         cols={cols} 
+        // 点击组件的类型
         type={openType}
+        // 组件的默认选中值
+        defaultValue={defaultValue}
       />
     )
+  }
+
+  /*
+    1. 封装renderFilterMore方法,渲染FilterMore组件
+    2. 从filtersData中,获取数据(roomType,oriented,floor,characteristic),通过props传递给FilterMore组件
+    3. FilterMore组件中,通过props获取到数据,分别将数据传递给renderFilters方法
+    4. 在renderFilters方法中,通过参数接收数据,遍历数据,渲染标签
+  */
+  renderFilterMore() {
+
+    // 从组件状态中解构出标题类型和房源过滤条件
+    const { 
+      openType,
+      filtersData: {
+        roomType,
+        oriented,
+        floor,
+        characteristic
+      }
+    } = this.state;
+
+    // 如果点击的不是筛选标题的话,就停止渲染下面的组件
+    if (openType !== 'more') {
+      return null;
+    }
+
+    const data = {
+      roomType,
+      oriented,
+      floor,
+      characteristic
+    }
+
+    return <FilterMore data={data} />
   }
 
   render() {
@@ -180,7 +302,7 @@ export default class Filter extends Component {
           }
 
           {/* 最后一个菜单对应的内容： */}
-          {/* <FilterMore /> */}
+          {this.renderFilterMore()}
         </div>
       </div>
     )
