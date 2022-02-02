@@ -16,8 +16,8 @@ import styles from './index.module.css'
 export default class FilterMore extends Component {
 
   state = {
-    // 当前选中项的值
-    selectedValues: []
+    // 当前选中项的值(从父组件传递来默认值)
+    selectedValues: this.props.defaultValue,
   }
 
   // Tag点击方法,将Tag对应的值保存到组件的状态中
@@ -93,13 +93,16 @@ export default class FilterMore extends Component {
         oriented,
         floor,
         characteristic
-      }
+      },
+      // 解构出父组件传入的方法
+      onCancel,
+      type
     } = this.props;
 
     return (
       <div className={styles.root}>
-        {/* 遮罩层 */}
-        <div className={styles.mask} />
+        {/* 遮罩层,给绑定了单击事件,当点击遮罩层的时候,隐藏当前组件 */}
+        <div className={styles.mask} onClick={() => onCancel(type)} />
 
         {/* 条件内容 */}
         <div className={styles.tags}>

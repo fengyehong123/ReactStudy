@@ -48,7 +48,7 @@ export default class FilterPicker extends Component {
           底部按钮
             onSave: 点击确定按钮,将当前标题的名称和当前标题下选中的数据传递给父组件中的onSave()方法
         */}
-        <FilterFooter onCancel={() => onCancel()} onOk={() => onSave(type, value)} />
+        <FilterFooter onCancel={() => onCancel(type)} onOk={() => onSave(type, value)} />
       </>
     )
   }

@@ -126,8 +126,9 @@ export default class Filter extends Component {
       } else if (item === 'price' && selectedVal[0] !== 'null') {
         // 高亮
         newTitleSelectedStatus[item] = true;
-      } else if (item === 'more') {
-
+      } else if (item === 'more' && selectedVal.length !== 0) {
+        // 高亮
+        newTitleSelectedStatus[item] = true;
       } else {
         newTitleSelectedStatus[item] = false;
       }
@@ -144,10 +145,40 @@ export default class Filter extends Component {
   }
 
   // 取消隐藏对话框
-  onCancel = () => {
+  onCancel = (type) => {
+
+    const {
+      // 标题选中状态对象
+      titleSelectedStatus,
+      // 获取标题选中值
+      selectedValues
+    } = this.state;
+
+    // 创建新的标题选中对象
+    const newTitleSelectedStatus = { ...titleSelectedStatus };
+    const selectedVal = selectedValues[type];
+
+    if (type === 'area' && (selectedVal.length !== 2 || selectedVal[0] !== 'area')) {
+      // 高亮
+      newTitleSelectedStatus[type] = true;
+    } else if (type === 'mode' && selectedVal[0] !== 'null') {
+      // 高亮
+      newTitleSelectedStatus[type] = true;
+    } else if (type === 'price' && selectedVal[0] !== 'null') {
+      // 高亮
+      newTitleSelectedStatus[type] = true;
+    } else if (type === 'more' && selectedVal.length !== 0) {
+      // 高亮
+      newTitleSelectedStatus[type] = true;
+    } else {
+      newTitleSelectedStatus[type] = false;
+    }
+
     this.setState({
       // 当该状态值设置为空,就可以隐藏对话框
-      openType: ''
+      openType: '',
+      // 更新标题选中对象
+      titleSelectedStatus: newTitleSelectedStatus
     })
   }
 
@@ -156,6 +187,30 @@ export default class Filter extends Component {
     type和value是子组件调用父组件中方法时,传入的参数
   */ 
   onSave = (type, value) => {
+
+    const {
+      // 标题选中状态对象
+      titleSelectedStatus, 
+    } = this.state;
+
+    // 创建新的标题选中对象
+    const newTitleSelectedStatus = { ...titleSelectedStatus };
+    const selectedVal = value;
+    if (type === 'area' && (selectedVal.length !== 2 || selectedVal[0] !== 'area')) {
+      // 高亮
+      newTitleSelectedStatus[type] = true;
+    } else if (type === 'mode' && selectedVal[0] !== 'null') {
+      // 高亮
+      newTitleSelectedStatus[type] = true;
+    } else if (type === 'price' && selectedVal[0] !== 'null') {
+      // 高亮
+      newTitleSelectedStatus[type] = true;
+    } else if (type === 'more' && selectedVal.length !== 0) {
+      // 高亮
+      newTitleSelectedStatus[type] = true;
+    } else {
+      newTitleSelectedStatus[type] = false;
+    }
 
     // 改变组件的状态
     this.setState(() => {
@@ -169,7 +224,9 @@ export default class Filter extends Component {
           ...this.state.selectedValues,
           // 使用当前传入的选中值替换默认的选中值
           [type]: value
-        }
+        },
+        // 更新标题选中对象
+        titleSelectedStatus: newTitleSelectedStatus
       }
     })
   }
@@ -251,8 +308,12 @@ export default class Filter extends Component {
   renderFilterMore() {
 
     // 从组件状态中解构出标题类型和房源过滤条件
-    const { 
+    const {
+      // 当前标题的类型
       openType,
+      // 组件的默认选中值
+      selectedValues,
+      // FilterMore组件相关的过滤数据
       filtersData: {
         roomType,
         oriented,
@@ -273,6 +334,8 @@ export default class Filter extends Component {
       characteristic
     }
 
+    // 获取到FilterMore组件的默认选中值
+    const defaultValue = selectedValues.more;
     return (
       <FilterMore 
         data={data}
@@ -280,6 +343,9 @@ export default class Filter extends Component {
         type={openType}
         // 父组件将保存方法传递给FilterMore子组件,当子组件点击确定按钮的时候,就可以把子组件选中的数据传递给父组件
         onSave={this.onSave}
+        onCancel={this.onCancel}
+        // 当前组件的默认选中值
+        defaultValue={defaultValue}
       />
     )
   }
@@ -296,7 +362,7 @@ export default class Filter extends Component {
             当前被点击的标题是下面这三个之一的时候,就展示遮罩层
             我们给遮罩层绑定了单击事件,当点击的时候,触发onCancel方法,隐藏遮罩层
           */ 
-          ['area', 'mode', 'price'].includes(openType) ? <div className={styles.mask} onClick={this.onCancel} /> : null
+          ['area', 'mode', 'price'].includes(openType) ? <div className={styles.mask} onClick={() => this.onCancel(openType)} /> : null
         }
 
         <div className={styles.content}>
