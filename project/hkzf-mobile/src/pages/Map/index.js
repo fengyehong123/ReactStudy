@@ -8,6 +8,8 @@ import { Link } from 'react-router-dom'
 import { Toast } from 'antd-mobile'
 // 导入封装好的NavHeader组件
 import NavHeader from '../../components/NavHeader'
+// 导入封装好的房源列表渲染组件
+import HouseItem from '../../components/HouseItem'
 // 导入样式(CSS Module)
 import styles from './index.module.css'
 
@@ -367,34 +369,19 @@ export default class Map extends React.Component {
         return (
             // 遍历房源数据,进行渲染
             this.state.housesList.map(item => (
-                <div className={styles.house} key={item.houseCode}>
-                    {/* 房源的图片 */}
-                    <div className={styles.imgWrap}>
-                        <img className={styles.img} src={`${BASE_URL}${item.houseImg}`} alt="" />
-                    </div>
-                    {/* 房源的内容 */}
-                    <div className={styles.content}>
-                        <h3 className={styles.title}>{item.title}</h3>
-                        <div className={styles.desc}>{item.desc}</div>
-                        {/* 房源特性的标签 */}
-                        <div>
-                            {/* 一个房源可能会有多个标签,我们遍历渲染 */}
-                            {item.tags.map((tag, index) => {
-                                const tagClass = 'tag' + (index + 1);
-                                return (
-                                    // 渲染不同标签所拥有的样式
-                                    <span className={[styles.tag, styles[tagClass]].join(' ')} key={tag} >
-                                        {tag}
-                                    </span>
-                                )
-                            })}
-                        </div>
-                        {/* 房源的价格 */}
-                        <div className={styles.price}>
-                            <span className={styles.priceNum}>{item.price}</span> 元/月
-                        </div>
-                    </div>
-                </div>
+                <HouseItem
+                    key={item.houseCode}
+                    // 房源图片的地址
+                    src={BASE_URL + item.houseImg}
+                    // 房源的标题
+                    title={item.title}
+                    // 房源的描述
+                    desc={item.desc}
+                    // 房源的标签(一个房源有多个标签,数据格式为数组)
+                    tags={item.tags}
+                    // 房源的价格
+                    price={item.price}
+                />
             ))
         )
     }

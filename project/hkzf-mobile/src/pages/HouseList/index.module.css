@@ -28,3 +28,16 @@
 .searchHeader :global(.search) {
     height: 30px;
 }
+
+/* 房屋列表样式 */
+.houseItems {
+    padding: 0 15px;
+}
+
+/* 加载效果 */
+.loading {
+    line-height: 120px;
+    text-align: center;
+    height: 110px;
+    background-color: #f6f5f6;
+}

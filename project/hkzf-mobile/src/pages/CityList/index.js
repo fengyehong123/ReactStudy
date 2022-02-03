@@ -321,26 +321,27 @@ export default class CityList extends React.Component {
                             通过render-props模式获取到AutoSizer组件暴露的width和height属性
                             城市列表组件
                         */ 
-                        ({width, height}) => 
-                        <List
-                            // 指定组件的实例对象,将List组件和我们创建的ref对象关联到一起
-                            ref={this.cityListComponent}
-                            width={width}
-                            height={height}
-                            // 获取组件中城市索引的长度
-                            rowCount={this.state.cityIndex.length}
-                            /*
-                                指定每一行的高度:高度可以是一个数字,固定高度
-                                也可以是一个函数,用来动态的计算高度
-                                当高度指定为函数的时候,函数的参数是List中行的索引号
-                            */ 
-                            rowHeight={this.setCustomRowHeight}
-                            // 指定城市列表的渲染函数
-                            rowRenderer={this.rowRenderer}
-                            // 用于获取List组件中渲染行的信息
-                            onRowsRendered={this.onRowsRendered}
-                            scrollToAlignment="start"
-                        />
+                        ({width, height}) => (
+                            <List
+                                // 指定组件的实例对象,将List组件和我们创建的ref对象关联到一起
+                                ref={this.cityListComponent}
+                                width={width}
+                                height={height}
+                                // 获取组件中城市索引的长度
+                                rowCount={this.state.cityIndex.length}
+                                /*
+                                    指定每一行的高度:高度可以是一个数字,固定高度
+                                    也可以是一个函数,用来动态的计算高度
+                                    当高度指定为函数的时候,函数的参数是List中行的索引号
+                                */ 
+                                rowHeight={this.setCustomRowHeight}
+                                // 指定城市列表的渲染函数
+                                rowRenderer={this.rowRenderer}
+                                // 用于获取List组件中渲染行的信息
+                                onRowsRendered={this.onRowsRendered}
+                                scrollToAlignment="start"
+                            />
+                        )
                     }
                 </AutoSizer>
 
