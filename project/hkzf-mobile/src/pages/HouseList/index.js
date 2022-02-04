@@ -11,6 +11,8 @@ import SearchHeader from '../../components/SearchHeader'
 import Filter from './components/Filter'
 // 导入房源展示组件
 import HouseItem from '../../components/HouseItem'
+// 导入让组件吸顶功能的组件
+import Sticky from '../../components/Sticky';
 
 // 导入当前组件的样式
 import styles from './index.module.css'
@@ -180,9 +182,15 @@ export default class HouseList extends React.Component {
                     <SearchHeader cityName={label} className={styles.searchHeader}></SearchHeader>
                 </Flex>
 
-                {/* 条件筛选栏组件 */}
-                <Filter onFilter={this.onFilter}></Filter>
-
+                {/* 
+                    通过Sticky组件包裹Filter组件,让Filter组件拥有吸顶功能
+                    height={40}: 表示包裹组件的固有高度
+                */}
+                <Sticky height={40}>
+                    {/* 条件筛选栏组件,作为Sticky组件的子节点传递到Sticky组件内部 */}
+                    <Filter onFilter={this.onFilter}></Filter>
+                </Sticky>
+                
                 {/* 房屋列表 */}
                 <div className={styles.houseItems}>
                     {/* 
