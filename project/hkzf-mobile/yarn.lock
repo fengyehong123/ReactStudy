@@ -1166,6 +1166,13 @@
   dependencies:
     regenerator-runtime "^0.13.4"
 
+"@babel/runtime@^7.3.1":
+  version "7.17.0"
+  resolved "https://registry.npmmirror.com/@babel/runtime/-/runtime-7.17.0.tgz#b8d142fc0f7664fb3d9b5833fd40dcbab89276c0"
+  integrity sha512-etcO/ohMNaNA2UBdaXBBSX/3aEzFMRrVfaPv8Ptc0k+cWpWW0QFiGZ2XnVqQZI1Cf734LbPGmqBKWESfW4x/dQ==
+  dependencies:
+    regenerator-runtime "^0.13.4"
+
 "@babel/template@^7.16.7", "@babel/template@^7.4.0", "@babel/template@^7.8.6":
   version "7.16.7"
   resolved "https://registry.npmmirror.com/@babel/template/download/@babel/template-7.16.7.tgz#8d126c8701fde4d66b264b3eba3d96f07666d155"
@@ -9050,6 +9057,14 @@ react-scripts@3.0.1:
     workbox-webpack-plugin "4.2.0"
   optionalDependencies:
     fsevents "2.0.6"
+
+react-spring@8.0.27:
+  version "8.0.27"
+  resolved "https://registry.npmmirror.com/react-spring/-/react-spring-8.0.27.tgz#97d4dee677f41e0b2adcb696f3839680a3aa356a"
+  integrity sha512-nDpWBe3ZVezukNRandTeLSPcwwTMjNVu1IDq9qA/AMiUqHuRN4BeSWvKr3eIxxg1vtiYiOLy4FqdfCP5IoP77g==
+  dependencies:
+    "@babel/runtime" "^7.3.1"
+    prop-types "^15.5.8"
 
 react-tween-state@^0.1.5:
   version "0.1.5"

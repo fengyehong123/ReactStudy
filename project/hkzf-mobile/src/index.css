@@ -37,3 +37,8 @@ body,
 .App {
   height: 100%;
 }
+
+/* 解决找房页面展示遮罩层后,页面还会滚动的问题 */
+.body-fixed {
+  overflow: hidden;
+}

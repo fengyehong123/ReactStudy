@@ -1,4 +1,6 @@
 import React, { Component } from 'react'
+// 导入Spring动画组件
+import { Spring } from 'react-spring/renderprops'
 
 import FilterTitle from '../FilterTitle'
 import FilterPicker from '../FilterPicker'
@@ -61,8 +63,17 @@ export default class Filter extends Component {
     this.onTitleClick = this.onTitleClick.bind(this);
   }
 
-  // 钩子函数,一进页面就调用
+  /*
+    解决展示条件筛选对话框之后,页面滚动的问题
+    1. 在componentDidMount中,获取到body,并存储在this中(htmlbody)
+    2. 在展示对话框的手,给body添加类body-fixed
+    3. 在关闭对话框(取消或者确定)的时候,移动body的类body-fixed
+  */
   componentDidMount() {
+
+    // 获取到页面的body属性
+    this.htmlBody = document.body;
+
     // 获取当前城市所对应的房源查询条件
     this.getFiltersData();
   }
@@ -85,6 +96,9 @@ export default class Filter extends Component {
     当点击标题的时候,让当前点击的标题高亮并且展示当前标题所对应的对话框
   */ 
   onTitleClick(type) {
+
+    // 给body添加样式(防止遮罩层打开之后,页面还能滚动)
+    this.htmlBody.className = 'body-fixed';
 
     /*
       1. 在标题点击事件onTitleClick方法中,获取到两个状态:标题选中状态对象和筛选条件的选中值对象
@@ -147,6 +161,9 @@ export default class Filter extends Component {
   // 取消隐藏对话框
   onCancel = (type) => {
 
+    // 取消整个页面的body样式,保证对话框隐藏之后,页面可以滚动
+    this.htmlBody.className = '';
+
     const {
       // 标题选中状态对象
       titleSelectedStatus,
@@ -187,6 +204,9 @@ export default class Filter extends Component {
     type和value是子组件调用父组件中方法时,传入的参数
   */ 
   onSave = (type, value) => {
+    
+    // 取消整个页面的body样式,保证对话框隐藏之后,页面可以滚动
+    this.htmlBody.className = '';
 
     const {
       // 标题选中状态对象
@@ -376,20 +396,72 @@ export default class Filter extends Component {
     )
   }
 
+  /*
+    实现遮罩层动画
+    1. 创建方法renderMask来渲染遮罩层div
+    2. 修改渲染遮罩层的逻辑,保证Spring组件一直都被渲染(Spring组件都被销毁了,就无法实现动画效果)
+    3. 修改to属性的值,在遮罩层隐藏时为0,在遮罩层展示时为1
+    4. 在render-props的函数内部,判断props.opacity是否等于0
+    5. 如果等于0,就返回null(不渲染遮罩层),解决遮罩层遮挡页面导致顶部导航失效的问题
+    6. 如果不等于0,渲染遮罩层div
+  */
+  renderMask() {
+
+    const { openType } = this.state;
+    // 当不包含'area', 'mode', 'price'的时候,遮罩层需要隐藏
+    const isHide = !['area', 'mode', 'price'].includes(openType);
+
+    /*
+      当前被点击的标题是'area'或者'mode'或者'price'时候,就展示遮罩层
+      我们给遮罩层绑定了单击事件,当点击的时候,触发onCancel方法,隐藏遮罩层
+    */ 
+    return (
+
+      // 使用Spring动画组件,给遮罩层添加动画效果
+      <Spring
+        from={{opacity: 0}}
+        to={{opacity: isHide ? 0 : 1}}
+      >
+        {props => {
+
+          /*
+            props => {opacity: 0}是从0到1的中间值
+            如果props.opacity为0的话,说明遮罩层已经完成动画效果,已经隐藏了
+          */ 
+          if (props.opacity === 0) {
+            /*
+              完成动画效果之后,遮罩层就不需要渲染了,防止遮挡其他按钮,导致按钮无法点击
+              在Spring组件内部返回null,可以保证遮罩层消失的时候,有动画效果,
+              如果在Spring组件外部返回null,Spring组件都没有被加载,当遮罩层消失的时候,
+              也就不会有动画效果
+            */ 
+            return null;
+          }
+
+          return (
+            <div
+              style={props}
+              // 遮罩层的样式
+              className={styles.mask}
+              // 点击遮罩层只有,触发onCancel事件,隐藏遮罩层
+              onClick={() => this.onCancel(openType)} 
+            />
+          )
+        }}
+      </Spring>
+    )
+  }
+
   render() {
 
     // 从当前父组件的状态中解构出需要的数据
-    const { titleSelectedStatus, openType } = this.state;
+    const { titleSelectedStatus} = this.state;
 
     return (
       <div className={styles.root}>
-        {
-          /*
-            当前被点击的标题是下面这三个之一的时候,就展示遮罩层
-            我们给遮罩层绑定了单击事件,当点击的时候,触发onCancel方法,隐藏遮罩层
-          */ 
-          ['area', 'mode', 'price'].includes(openType) ? <div className={styles.mask} onClick={() => this.onCancel(openType)} /> : null
-        }
+
+        {/* 渲染遮罩层 */}
+        {this.renderMask()}
 
         <div className={styles.content}>
           {/* 标题栏 */}
