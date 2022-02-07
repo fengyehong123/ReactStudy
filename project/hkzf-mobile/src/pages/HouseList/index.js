@@ -165,6 +165,8 @@ export default class HouseList extends React.Component {
                 desc={house.desc}
                 tags={house.tags}
                 price={house.price}
+                // 点击房源之后,实现页面跳转
+                onClick={() => this.props.history.push(`/detail/${house.houseCode}`)}
             />
         );
     }

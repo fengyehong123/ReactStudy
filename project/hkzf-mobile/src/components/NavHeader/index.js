@@ -25,7 +25,7 @@ import styles from './index.module.css'
     4. 调用history.go()实现返回上一页的功能
     5. 从props中解构出 onLeftClick 函数,实现自定义 < 按钮的点击事件
 */ 
-function NavHeader({ children, history, onLeftClick }) {
+function NavHeader({ children, history, onLeftClick, className, rightContent }) {
 
     // 默认的点击行为,点击左侧的图标按钮,返回上一个页面
     const defaultHandler = () => history.go(-1);
@@ -33,11 +33,14 @@ function NavHeader({ children, history, onLeftClick }) {
     return (
         <NavBar
             // 使用css module的方式进行样式导入指定
-            className={styles.navBar}
+            // 如果指定了className就指定,否则就是空的
+            className={[styles.NavBar, className || ''].join(' ')}
             mode="light"
             icon={<i className="iconfont icon-back"/>}
             // 如果用户传入了onLeftClick参数,就使用用户自定义的行为,否则使用默认点击行为
             onLeftClick={onLeftClick || defaultHandler}
+            // 指定导航栏右侧展示的内容
+            rightContent={rightContent}
         >
             {/* 使用children属性来动态传参数 */}
             {children}
@@ -58,7 +61,9 @@ NavHeader.propTypes = {
     // 字符串类型且为必填项
     children: PropTypes.string.isRequired,
     // 函数类型
-    onLeftClick: PropTypes.func
+    onLeftClick: PropTypes.func,
+    className: PropTypes.string,
+    rightContent: PropTypes.array
 }
 
 /*

@@ -4,6 +4,9 @@ import CityList from './pages/CityList'
 import Home from './pages/Home'
 // 导入地图组件
 import Map from './pages/Map'
+// 房源详情组件
+import HouseDetail from './pages/HouseDetail'
+
 /*
   ❗❗组件间样式覆盖的问题
   ⏹ 问题:CityList组件和Map组件都使用了我们封装的NavHeader组件
@@ -73,6 +76,13 @@ function App() {
             必须要使用withRouter高阶组件才可以
         */}
         <Route path="/map" component={Map}></Route>
+
+        {/* 
+          房源详情的路由规则
+          :id代表路由参数,代表不固定的参数
+          HouseDetail组件中使用此路由参数(也就是房屋的id)来获取房屋的详情数据
+        */}
+        <Route path="/detail/:id" component={HouseDetail}></Route>
       </div>
     </BrowserRouter>
   );
