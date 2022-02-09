@@ -61,10 +61,10 @@ export default class HouseDetail extends Component {
 
   state = {
     isLoading: false,
-    // 房源的信息
+    // 房屋详情
     houseInfo: {
       // 房屋图片
-      slides: [],
+      houseImg: [],
       // 标题
       title: '',
       // 标签
@@ -72,11 +72,9 @@ export default class HouseDetail extends Component {
       // 租金
       price: 0,
       // 房型
-      roomType: '两室一厅',
+      roomType: '',
       // 房屋面积
-      size: 89,
-      // 装修类型
-      renovation: '精装',
+      size: 0,
       // 朝向
       oriented: [],
       // 楼层
@@ -84,10 +82,7 @@ export default class HouseDetail extends Component {
       // 小区名称
       community: '',
       // 地理位置
-      coord: {
-        latitude: '39.928033',
-        longitude: '116.529466'
-      },
+      coord: {},
       // 房屋配套
       supporting: [],
       // 房屋标识
@@ -101,11 +96,6 @@ export default class HouseDetail extends Component {
 
     // 一进入页面就获取房源数据
     this.getHouseDetail();
-
-    this.renderMap('天山星城', {
-      latitude: '31.219228',
-      longitude: '121.391768'
-    })
   }
 
   // 获取房屋的详情数据
@@ -130,29 +120,28 @@ export default class HouseDetail extends Component {
         isLoading: false
       }
     })
+
+    const {
+      // 小区名称
+      community,
+      // 地理位置
+      coord
+    } = res.data.body;
+    
+    // 将小区位置渲染在地图上
+    this.renderMap(community, coord)
   }
 
   // 渲染轮播图结构
   renderSwipers() {
     const {
-      houseInfo: { slides = [] }
-    } = this.state
+      houseInfo: { houseImg },
+    } = this.state;
 
-    return slides.map(item => (
-      <a
-        key={item.id}
-        href="http://itcast.cn"
-        style={{
-          display: 'inline-block',
-          width: '100%',
-          height: 252
-        }}
-      >
-        <img
-          src={BASE_URL + item.imgSrc}
-          alt=""
-          style={{ width: '100%', verticalAlign: 'top' }}
-        />
+    // houseImg是房源的图片list
+    return houseImg.map(item => (
+      <a key={item} href="http://itcast.cn">
+        <img src={BASE_URL + item} alt="" />
       </a>
     ))
   }
@@ -182,7 +171,26 @@ export default class HouseDetail extends Component {
 
     // 从组件数据中获取出房源的详情的数据
     const { isLoading, houseInfo: {
-      community
+      // 小区的名称
+      community,
+      // 房源的标题
+      title,
+      // 房源的tag
+      tags,
+      // 房源的价格
+      price,
+      // 房型
+      roomType,
+      // 房源的面积
+      size,
+      // 楼层
+      floor,
+      // 房屋的朝向
+      oriented,
+      // 房屋的配套设施
+      supporting,
+      // 房屋详情描述
+      description
     } } = this.state
 
     return (
@@ -210,30 +218,38 @@ export default class HouseDetail extends Component {
         {/* 房屋基础信息 */}
         <div className={styles.info}>
           <h3 className={styles.infoTitle}>
-            整租 · 精装修，拎包入住，配套齐Q，价格优惠
+            {/* 房源的标题 */}
+            {title}
           </h3>
           <Flex className={styles.tags}>
             <Flex.Item>
-              <span className={[styles.tag, styles.tag1].join(' ')}>
-                随时看房
-              </span>
+              {
+                // 渲染房源的标签
+                tags.map((item, index) => {
+                  return (
+                    <span key={item} className={[styles.tag, styles['tag' + (index + 1)]].join(' ')}>
+                      {item}
+                    </span>
+                  )
+                })
+              }
             </Flex.Item>
           </Flex>
 
           <Flex className={styles.infoPrice}>
             <Flex.Item className={styles.infoPriceItem}>
               <div>
-                8500
+                {price}
                 <span className={styles.month}>/月</span>
               </div>
               <div>租金</div>
             </Flex.Item>
             <Flex.Item className={styles.infoPriceItem}>
-              <div>1室1厅1卫</div>
+              <div>{roomType}</div>
               <div>房型</div>
             </Flex.Item>
             <Flex.Item className={styles.infoPriceItem}>
-              <div>78平米</div>
+              <div>{size}平米</div>
               <div>面积</div>
             </Flex.Item>
           </Flex>
@@ -246,12 +262,15 @@ export default class HouseDetail extends Component {
               </div>
               <div>
                 <span className={styles.title}>楼层：</span>
-                低楼层
+                {floor}
               </div>
             </Flex.Item>
             <Flex.Item>
               <div>
-                <span className={styles.title}>朝向：</span>南
+                {/* 一个房屋可以有多个朝向,使用顿号分隔的字符串表示 */}
+                <span className={styles.title}>朝向：</span>{
+                  oriented.join('、')
+                }
               </div>
               <div>
                 <span className={styles.title}>类型：</span>普通住宅
@@ -264,7 +283,7 @@ export default class HouseDetail extends Component {
         <div className={styles.map}>
           <div className={styles.mapTitle}>
             小区：
-            <span>天山星城</span>
+            <span>{community}</span>
           </div>
           <div className={styles.mapContainer} id="map">
             地图
@@ -274,19 +293,11 @@ export default class HouseDetail extends Component {
         {/* 房屋配套 */}
         <div className={styles.about}>
           <div className={styles.houseTitle}>房屋配套</div>
-          <HousePackage
-            list={[
-              '电视',
-              '冰箱',
-              '洗衣机',
-              '空调',
-              '热水器',
-              '沙发',
-              '衣柜',
-              '天然气'
-            ]}
-          />
-          {/* <div className="title-empty">暂无数据</div> */}
+          {
+            // 房屋配套设施无数据的话,展示无数据组件的数据
+            supporting.length === 0 ? (<div className={styles.titleEmpty}>暂无数据</div>) 
+            : (<HousePackage list={supporting} />)
+          }
         </div>
 
         {/* 房屋概况 */}
@@ -308,11 +319,7 @@ export default class HouseDetail extends Component {
             </div>
 
             <div className={styles.descText}>
-              {/* {description || '暂无房屋描述'} */}
-              1.周边配套齐全，地铁四号线陶然亭站，交通便利，公交云集，距离北京南站、西站都很近距离。
-              2.小区规模大，配套全年，幼儿园，体育场，游泳馆，养老院，小学。
-              3.人车分流，环境优美。
-              4.精装两居室，居家生活方便，还有一个小书房，看房随时联系。
+              {description || '暂无房屋描述'}
             </div>
           </div>
         </div>
