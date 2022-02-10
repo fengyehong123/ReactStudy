@@ -6,6 +6,10 @@ import Home from './pages/Home'
 import Map from './pages/Map'
 // 房源详情组件
 import HouseDetail from './pages/HouseDetail'
+// 导入登录组件
+import Login from './pages/Login'
+// 导入注册组件
+import Registe from './pages/Registe'
 
 /*
   ❗❗组件间样式覆盖的问题
@@ -83,6 +87,10 @@ function App() {
           HouseDetail组件中使用此路由参数(也就是房屋的id)来获取房屋的详情数据
         */}
         <Route path="/detail/:id" component={HouseDetail}></Route>
+        {/* 登录组件的路由地址 */}
+        <Route path="/login" component={Login}></Route>
+        {/* 注册组件的路由地址 */}
+        <Route path="/registe" component={Registe}></Route>
       </div>
     </BrowserRouter>
   );

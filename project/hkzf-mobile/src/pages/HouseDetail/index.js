@@ -167,6 +167,30 @@ export default class HouseDetail extends Component {
     map.addOverlay(label)
   }
 
+  // 渲染房源的标签
+  renderTags() {
+
+    const { houseInfo: { tags } } = this.state;
+
+    // 渲染房源的标签
+    return tags.map((item, index) => {
+
+      // 如果标签的数量超过3个,后面的标签就都展示第三个标签的样式
+      let tagClass = '';
+      if (index > 2) {
+        tagClass = 'tag3';
+      } else {
+        tagClass = 'tag' + (index + 1)
+      }
+
+      return (
+        <span key={item} className={[styles.tag, styles[tagClass]].join(' ')}>
+          {item}
+        </span>
+      )
+    })
+  }
+
   render() {
 
     // 从组件数据中获取出房源的详情的数据
@@ -175,8 +199,6 @@ export default class HouseDetail extends Component {
       community,
       // 房源的标题
       title,
-      // 房源的tag
-      tags,
       // 房源的价格
       price,
       // 房型
@@ -206,6 +228,7 @@ export default class HouseDetail extends Component {
 
         {/* 轮播图 */}
         <div className={styles.slides}>
+          {/* 为了轮播图能自动轮播,添加的判断 */}
           {!isLoading ? (
             <Carousel autoplay infinite autoplayInterval={5000}>
               {this.renderSwipers()}
@@ -225,13 +248,7 @@ export default class HouseDetail extends Component {
             <Flex.Item>
               {
                 // 渲染房源的标签
-                tags.map((item, index) => {
-                  return (
-                    <span key={item} className={[styles.tag, styles['tag' + (index + 1)]].join(' ')}>
-                      {item}
-                    </span>
-                  )
-                })
+                this.renderTags()
               }
             </Flex.Item>
           </Flex>
