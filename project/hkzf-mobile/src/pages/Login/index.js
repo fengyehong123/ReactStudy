@@ -1,7 +1,12 @@
 import React, { Component } from 'react'
-import { Flex, WingBlank, WhiteSpace } from 'antd-mobile'
+import { Flex, WingBlank, WhiteSpace, Toast } from 'antd-mobile'
 
 import { Link } from 'react-router-dom'
+
+// 导入withFormik
+import { withFormik } from 'formik'
+
+import { API } from '../../utils/api'
 
 import NavHeader from '../../components/NavHeader'
 
@@ -11,61 +16,25 @@ import styles from './index.module.css'
 // const REG_UNAME = /^[a-zA-Z_\d]{5,8}$/
 // const REG_PWD = /^[a-zA-Z_\d]{5,12}$/
 /*
-  登录功能
-  1. 添加状态: username(账号)password(密码)
-  2. 使用受控组件的方式获取表单的元素值
-  3. 给form表单添加onSubmit
-  4. 创建方法handleSubmit,实现表单提交
-  5. 在方法中,通过username和password获取到账号和密码
-  6. 使用API调用登录接口,将username和password作为参数
-  7. 判断返回值status为200的时候,表示登录成功
-  8. 登录成功之后,将token保存到本地存储中(hkzf_token)
-  9. 返回登录之前的页面
+  使用formik重构登录功能
+  1. 安装formik
+  2. 导入withFormik,使用withFormik高阶组件包裹Login组件
+  3. 为withFormik提供配置对象: mapPropsToValues / handleSubmit
+  4. 在Login组件中,通过props获取到values(表单元素值对象),handleSubmit,handleChange
+  5. 使用values提供的值,设置为表单元素的value,使用handleChange设置为表单元素的onChange
+      注意: 在给表单元素设置handleChange的时候,为了让其生效,需要给表单元素添加name属性,并且name属性的值
+      与当前value名称需要相同!!!
+  6. 使用handleSubmit设置为表单的onSubmit
+  7. 在handleSubmit中,通过values获取到表单元素值
+  8. 在handleSubmit中,完成登录逻辑
 */
 class Login extends Component {
 
-  state = {
-    username: '',
-    password: ''
-  }
-
-  /*
-    将输入的用户名保存到组件的状态中,e是事件对象
-    React中没有Vue中的双向绑定,因此需要手动保存组件数据
-  */
-  getUserName = (e) => {
-    /*
-      没有使用解构的方式来获取的话,需要添加 e.persist(); 否则会报错
-      详情参考: https://www.jianshu.com/p/bf390141fae8
-    */ 
-    e.persist();
-    this.setState(() => {
-      return {
-        username: e.target.value
-      }
-    })
-  }
-
-  // 获取用户输入的密码(通过解构的方式来获取)
-  getPassword = ({target: {value}}) => {
-    this.setState(() => {
-      return {
-        password: value
-      }
-    })
-  }
-
-  // 表单提交事件方法
-  handleSubmit = (e) => {
-    // 阻止表单提交时的默认行为
-    e.preventDefault();
-    console.log(this.state);
-    
-  }
-
+  // 因为我们使用了formik组件,因此不需要手动设置state和onChange事件来保存表单输入数据到state
   render() {
 
-    const { username, password } = this.state;
+    // 通过props获取高阶组件传递进来的属性(Login组件被高阶组件withFormik所包裹)
+    const { values, handleSubmit, handleChange } = this.props;
 
     return (
       <div className={styles.root}>
@@ -76,12 +45,16 @@ class Login extends Component {
 
         {/* 登录表单,WingBlank是两翼留白组件 */}
         <WingBlank>
-          <form onSubmit={this.handleSubmit}>
+          {/* 高阶组件中的handleSubmit */}
+          <form onSubmit={handleSubmit}>
             <div className={styles.formItem}>
               <input
                 className={styles.input}
-                value={username}
-                onChange={this.getUserName}
+                // 高阶组件中的values.username
+                value={values.username}
+                // 高阶组件中的handleChange
+                onChange={handleChange}
+                // 必须给每一个表单元素提供name属性,否则onChange时,不知道处理的是那个项目
                 name="username"
                 placeholder="请输入账号"
               />
@@ -91,8 +64,10 @@ class Login extends Component {
             <div className={styles.formItem}>
               <input
                 className={styles.input}
-                value={password}
-                onChange={this.getPassword}
+                // 高阶组件中的values.password
+                value={values.password}
+                // 高阶组件中的handleChange
+                onChange={handleChange}
                 name="password"
                 type="password"
                 placeholder="请输入密码"
@@ -117,4 +92,43 @@ class Login extends Component {
   }
 }
 
+/*
+  使用withFormik高阶组件包装Login组件,为Login组件提供属性和方法
+  返回的是被高阶组件包裹之后的Login组件
+*/ 
+Login = withFormik({
+  // 为组件提供状态(表单输入的项目)
+  mapPropsToValues: () => ({ username: '', password: '' }),
+  // 为表单提供提交事件(当表单提交的时候,就会触发该函数)
+  handleSubmit: async (values, { props }) => {
+    
+    // 解构出用户输入的账号和密码
+    const { username, password } = values;
+
+    // 调用登录的接口
+    const res = await API.post('/user/login', {
+      username,
+      password
+    });
+
+    // 解构后端返回的值
+    const {status, body, description} = res.data;
+    if (status === 200) {
+      // 将token值保存到浏览器中
+      localStorage.setItem('hkzf_token', body.token);
+      /*
+        返回上一个页面
+        注意: 无法在该方法汇总通过this.props来获取到路由信息(因为this指向当前回调函数,并不指向该组件)
+        通过handleSubmit方法的第二个参数中解构出props来使用props
+      */ 
+      props.history.go(-1);
+    } else {
+      // 登录失败,显示错误提示信息
+      Toast.info(description, 2, null, false);
+    }
+
+  }
+})(Login)
+
+// 注意: 此处返回的是被高阶组件包装后的Login组件
 export default Login
