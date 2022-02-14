@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom'
 
 // 导入withFormik
 import { withFormik } from 'formik'
+// 导入Yup表单校验
+import * as Yup from 'yup'
 
 import { API } from '../../utils/api'
 
@@ -12,9 +14,10 @@ import NavHeader from '../../components/NavHeader'
 
 import styles from './index.module.css'
 
-// 验证规则：
-// const REG_UNAME = /^[a-zA-Z_\d]{5,8}$/
-// const REG_PWD = /^[a-zA-Z_\d]{5,12}$/
+// 表单验证规则：
+const REG_UNAME = /^[a-zA-Z_\d]{5,8}$/
+const REG_PWD = /^[a-zA-Z_\d]{5,12}$/
+
 /*
   使用formik重构登录功能
   1. 安装formik
@@ -27,6 +30,12 @@ import styles from './index.module.css'
   6. 使用handleSubmit设置为表单的onSubmit
   7. 在handleSubmit中,通过values获取到表单元素值
   8. 在handleSubmit中,完成登录逻辑
+
+  给登录功能添加表单验证
+  1. 安装yup,导入Yup
+  2. 在withFormik中添加配置项validationSchema,使用Yup添加表单校验规则
+  3. 在Login组件中,通过props获取到errors(错误信息)和touched(是否访问过,注意:需要给表单元素添加handleBlur处理失去焦点事件才生效)
+  4. 在表单元素中,通过这两个对象展示表单校验的错误信息
 */
 class Login extends Component {
 
@@ -34,7 +43,7 @@ class Login extends Component {
   render() {
 
     // 通过props获取高阶组件传递进来的属性(Login组件被高阶组件withFormik所包裹)
-    const { values, handleSubmit, handleChange } = this.props;
+    const { values, handleSubmit, handleChange, handleBlur, errors, touched } = this.props;
 
     return (
       <div className={styles.root}>
@@ -54,13 +63,21 @@ class Login extends Component {
                 value={values.username}
                 // 高阶组件中的handleChange
                 onChange={handleChange}
+                // 只有当失去焦点的时候才会触发handleBlur,才会触发表单校验
+                onBlur={handleBlur}
                 // 必须给每一个表单元素提供name属性,否则onChange时,不知道处理的是那个项目
                 name="username"
                 placeholder="请输入账号"
               />
             </div>
-            {/* 长度为5到8位，只能出现数字、字母、下划线 */}
-            {/* <div className={styles.error}>账号为必填项</div> */}
+            {
+              /*
+                校验失败后,显示的错误消息
+                只有当该项目校验失败并且访问过(光标离开)的时候,才会显示错误提示消息
+              */ 
+              errors.username && touched.username && <div className={styles.error}>{errors.username}</div>
+            }
+
             <div className={styles.formItem}>
               <input
                 className={styles.input}
@@ -68,13 +85,16 @@ class Login extends Component {
                 value={values.password}
                 // 高阶组件中的handleChange
                 onChange={handleChange}
+                onBlur={handleBlur}
                 name="password"
                 type="password"
                 placeholder="请输入密码"
               />
             </div>
-            {/* 长度为5到12位，只能出现数字、字母、下划线 */}
-            {/* <div className={styles.error}>账号为必填项</div> */}
+            {
+              // 校验失败后,显示的错误消息
+              errors.password && touched.password && <div className={styles.error}>{errors.password}</div>
+            }
             <div className={styles.formSubmit}>
               <button className={styles.submit} type="submit">
                 登 录
@@ -99,6 +119,11 @@ class Login extends Component {
 Login = withFormik({
   // 为组件提供状态(表单输入的项目)
   mapPropsToValues: () => ({ username: '', password: '' }),
+  // 添加表单校验规则
+  validationSchema: Yup.object().shape({
+    username: Yup.string().required('账号为必填项').matches(REG_UNAME, '长度为5到8位，只能出现数字、字母、下划线'),
+    password: Yup.string().required('密码为必填项').matches(REG_PWD, '长度为5到12位，只能出现数字、字母、下划线'),
+  }),
   // 为表单提供提交事件(当表单提交的时候,就会触发该函数)
   handleSubmit: async (values, { props }) => {
     
