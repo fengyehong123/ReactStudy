@@ -4,7 +4,7 @@ import { Flex, WingBlank, WhiteSpace, Toast } from 'antd-mobile'
 import { Link } from 'react-router-dom'
 
 // 导入withFormik
-import { withFormik, Form, Field, ErrorMessage } from 'formik'
+import { withFormik } from 'formik'
 // 导入Yup表单校验
 import * as Yup from 'yup'
 
@@ -36,17 +36,14 @@ const REG_PWD = /^[a-zA-Z_\d]{5,12}$/
   2. 在withFormik中添加配置项validationSchema,使用Yup添加表单校验规则
   3. 在Login组件中,通过props获取到errors(错误信息)和touched(是否访问过,注意:需要给表单元素添加handleBlur处理失去焦点事件才生效)
   4. 在表单元素中,通过这两个对象展示表单校验的错误信息
-
-  简化表单处理
-  1. 导入Form组件,替换form元素,去掉onsubmit
-  2. 导入Field组件,替换input表单元素去掉onChange,onBlur,value
-  3. 导入ErrorMessage组件,替换原来的错误消息逻辑代码
-  4. 去掉所有的props
 */
 class Login extends Component {
 
   // 因为我们使用了formik组件,因此不需要手动设置state和onChange事件来保存表单输入数据到state
   render() {
+
+    // 通过props获取高阶组件传递进来的属性(Login组件被高阶组件withFormik所包裹)
+    const { values, handleSubmit, handleChange, handleBlur, errors, touched } = this.props;
 
     return (
       <div className={styles.root}>
@@ -57,49 +54,58 @@ class Login extends Component {
 
         {/* 登录表单,WingBlank是两翼留白组件 */}
         <WingBlank>
-          {/* 使用Form组件替换form元素,简化表单处理 */}
-          <Form>
-            {/* 账号 */}
+          {/* 高阶组件中的handleSubmit */}
+          <form onSubmit={handleSubmit}>
             <div className={styles.formItem}>
-              {/* 使用Field组件替换input输入框 */}
-              <Field 
-                className={styles.input}  
+              <input
+                className={styles.input}
+                // 高阶组件中的values.username
+                value={values.username}
+                // 高阶组件中的handleChange
+                onChange={handleChange}
+                // 只有当失去焦点的时候才会触发handleBlur,才会触发表单校验
+                onBlur={handleBlur}
+                // 必须给每一个表单元素提供name属性,否则onChange时,不知道处理的是那个项目
                 name="username"
-                placeholder="请输入账号">
-              </Field>
+                placeholder="请输入账号"
+              />
             </div>
-            {/* 
-              校验失败后,展示的错误信息
-              name="username" 代表展示username的错误信息
-              component代表要把ErrorMessage组件最终渲染为div元素
-            */}
-            <ErrorMessage className={styles.error} name="username" component='div'></ErrorMessage>
+            {
+              /*
+                校验失败后,显示的错误消息
+                只有当该项目校验失败并且访问过(光标离开)的时候,才会显示错误提示消息
+              */ 
+              errors.username && touched.username && <div className={styles.error}>{errors.username}</div>
+            }
 
-            {/* 密码 */}
             <div className={styles.formItem}>
-              {/* 使用Field组件替换input输入框 */}
-              <Field 
-                className={styles.input}  
-                type="password"
+              <input
+                className={styles.input}
+                // 高阶组件中的values.password
+                value={values.password}
+                // 高阶组件中的handleChange
+                onChange={handleChange}
+                onBlur={handleBlur}
                 name="password"
-                placeholder="请输入密码">
-              </Field>
+                type="password"
+                placeholder="请输入密码"
+              />
             </div>
-            <ErrorMessage className={styles.error} name="password" component='div'></ErrorMessage>
-
+            {
+              // 校验失败后,显示的错误消息
+              errors.password && touched.password && <div className={styles.error}>{errors.password}</div>
+            }
             <div className={styles.formSubmit}>
               <button className={styles.submit} type="submit">
                 登 录
               </button>
             </div>
-          </Form>
-
+          </form>
           <Flex className={styles.backHome}>
             <Flex.Item>
               <Link to="/registe">还没有账号，去注册~</Link>
             </Flex.Item>
           </Flex>
-          
         </WingBlank>
       </div>
     )
