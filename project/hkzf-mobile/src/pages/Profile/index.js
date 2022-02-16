@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 
 import { Link } from 'react-router-dom'
 // 导入宫格组件
-import { Grid, Button } from 'antd-mobile'
+import { Grid, Button, Modal } from 'antd-mobile'
 import { BASE_URL } from '../../utils/url'
 import { API } from '../../utils/api'
 // 导入认证工具类
@@ -27,6 +27,9 @@ const menus = [
 
 // 默认头像
 const DEFAULT_AVATAR = BASE_URL + '/img/profile/avatar.png'
+
+// Modal对话框的alert方法
+const alert = Modal.alert;
 
 export default class Profile extends Component {
 
@@ -55,9 +58,12 @@ export default class Profile extends Component {
 
     // 如果用户已经登录,发送请求,获取用户资料
     const res = await API.get('/user', {
-      headers: {
-        authorization: auth.getToken()
-      }
+      /*
+        因为我们已经配置了请求拦截器,所以不需要在每次请求都添加请求头了
+        headers: {
+          authorization: auth.getToken()
+        }
+      */
     })
 
     // 只有当状态值为200的时候,才表示请求成功
@@ -71,7 +77,45 @@ export default class Profile extends Component {
           }
         }
       })
+    } else {
+      // 当token异常或者token失效的话,应该将 isLogin 设置为false
+      this.setState(() => {
+        return {
+          isLogin: false,
+        }
+      })
     }
+  }
+
+  // 退出
+  logout = () => {
+
+    alert('提示', '是否确定退出?', [
+      {text: '取消'},
+      {text: '退出', onPress: async () => {
+        // 调用用户退出接口
+        await API.post('/user/logout', null, {
+          headers: {
+            authorization: auth.getToken(),
+          }
+        })
+
+        // 用户退出之后,移除本地的token
+        auth.removeToken();
+
+        // 清空组件中的数据
+        this.setState(() => {
+          return {
+            isLogin: '',
+            userInfo: {
+              avatar: '',
+              nickname: ''
+            }
+          }
+        })
+        
+      }}
+    ])
   }
 
   render() {
