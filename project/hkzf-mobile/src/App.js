@@ -10,6 +10,8 @@ import HouseDetail from './pages/HouseDetail'
 import Login from './pages/Login'
 // 导入注册组件
 import Registe from './pages/Registe'
+// 导入自定义的路由鉴权组件(只有登录之后才能访问组件)
+// import AuthRoute from './components/AuthRoute'
 
 /*
   ❗❗组件间样式覆盖的问题
