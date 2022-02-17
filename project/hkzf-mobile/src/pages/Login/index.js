@@ -132,15 +132,39 @@ Login = withFormik({
 
     // 解构后端返回的值
     const {status, body, description} = res.data;
+    // 登录成功
     if (status === 200) {
       // 将token值保存到浏览器中
       localStorage.setItem('hkzf_token', body.token);
-      /*
-        返回上一个页面
-        注意: 无法在该方法汇总通过this.props来获取到路由信息(因为this指向当前回调函数,并不指向该组件)
-        通过handleSubmit方法的第二个参数中解构出props来使用props
-      */ 
-      props.history.go(-1);
+      
+      // 当props.location.state为空时,说明是直接进入的登录页面,登录成功之后返回上一个页面即可
+      if (!props.location.state) {
+        /*
+          返回上一个页面
+          注意: 无法在该方法汇总通过this.props来获取到路由信息(因为this指向当前回调函数,并不指向该组件)
+          通过handleSubmit方法的第二个参数中解构出props来使用props
+        */ 
+        props.history.go(-1);
+      } else {
+        /*
+          如果props.location.state不为空,说明未登录却访问了登录之后才能看的页面,
+          然后被重定向到Login登录页面,
+          这个时候props.location.state中会含有原先页面的url(我们在鉴权组件AuthRoute中进行了配置)
+        */ 
+        /*
+          props.history.replace()和props.history.push()的区别
+          ※假设Map地图页面是登录之后才能访问的页面
+          当我们从首页点击右上角地图图标的时候,访问顺序如下 首页 -> Login登录页面 -> Map地图页面
+
+          当我们进入地图页面之后,点击左上角的返回按钮的时候
+          1. 如果是props.history.push()的情况下,访问路径被记录在这样的数组里 ['home', 'login', 'map']
+              所以当我们在Map页面点击返回上一个页面的时候,会找到第二个元素 login, 跳转到Login登录页面
+          2. 如果是props.history.replace()的情况下,当我们访问到Login组件的时候,访问的路径被记录在这样的数组里
+              ['home', 'login'],我们登录成功之后,进入Map页面,因为使用的是replace(),所以 /login 会被替换为 /map
+              也就说数组变成了['home', 'map'],所以在map页面返回前一个页面的时候,跳转到的是 /home 而不是 /login
+        */
+        props.history.replace(props.location.state.from.pathname);
+      }
     } else {
       // 登录失败,显示错误提示信息
       Toast.info(description, 2, null, false);
