@@ -10,8 +10,12 @@ import HouseDetail from './pages/HouseDetail'
 import Login from './pages/Login'
 // 导入注册组件
 import Registe from './pages/Registe'
+// 导入房源发布组件
+import Rent from './pages/Rent'
+import RentAdd from './pages/Rent/Add'
+import RentSearch from './pages/Rent/Search'
 // 导入自定义的路由鉴权组件(只有登录之后才能访问组件)
-// import AuthRoute from './components/AuthRoute'
+import AuthRoute from './components/AuthRoute'
 
 /*
   ❗❗组件间样式覆盖的问题
@@ -93,6 +97,11 @@ function App() {
         <Route path="/login" component={Login}></Route>
         {/* 注册组件的路由地址 */}
         <Route path="/registe" component={Registe}></Route>
+        
+        {/* 配置登录后才能访问的页面 */}
+        <AuthRoute exact path='/rent' component={Rent} />
+        <AuthRoute path='/rent/add' component={RentAdd} />
+        <AuthRoute path='/rent/search' component={RentSearch} />
       </div>
     </BrowserRouter>
   );
