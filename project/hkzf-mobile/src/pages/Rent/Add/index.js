@@ -7,7 +7,8 @@ import {
   Picker,
   ImagePicker,
   TextareaItem,
-  Modal
+  Modal,
+  Toast
 } from 'antd-mobile'
 
 import { API } from '../../../utils/api'
@@ -159,7 +160,20 @@ export default class RentAdd extends Component {
   addHouse = async () => {
 
     // 获取出当前组件中的临时图片地址
-    const { tempSlides } = this.state;
+    const { 
+      tempSlides,
+      // 房源标题
+      title,
+      // 房源描述
+      description,
+      oriented,
+      supporting,
+      price,
+      roomType,
+      size,
+      floor,
+      community
+    } = this.state;
 
     // 后台返回的上传成功之后的图片地址(我们处理为以|进行分隔)
     let houseImg = '';
@@ -182,6 +196,35 @@ export default class RentAdd extends Component {
 
       houseImg = res.data.body.join('|');
     }
+
+    // 发布房源
+    const res = await API.post('/user/houses', {
+      // 房源标题
+      title,
+      // 房源描述
+      description,
+      oriented,
+      supporting,
+      price,
+      roomType,
+      size,
+      floor,
+      // 小区id
+      community: community.id,
+      // 房源图片
+      houseImg
+    })
+
+    // 发布成功
+    if (res.data.status === 200) {
+
+      Toast.info('发布成功', 1, null, false)
+      // 跳转到已发送房源页面
+      this.props.history.push('/rent');
+    } else {
+      Toast.info('服务器偷懒了,请稍后再试~', 2, null, false)
+    }
+    
   }
 
   render() {
