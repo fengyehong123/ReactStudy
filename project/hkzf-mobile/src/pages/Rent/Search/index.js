@@ -21,12 +21,34 @@ export default class Search extends Component {
     tipsList: []
   }
 
+  /*
+    传递小区数据
+    1. 给搜索列表添加单击事件
+    2. 在事件处理程序中,调用history.replace()方法跳转到发布房源页面
+    3. 将被点击的小区信息作为数据一起传递过去
+    4. 在发布房源页面,判断history.location.state是否为空
+    5. 如果为空,就不做任何处理
+    6. 如果不为空,则将小区信息存储到发布房源页面的状态中
+  */
+  onTipsClick = (item) => {
+
+    // 跳转到房源发布页面的时候,携带当前点击的房源的id和房源名称
+    this.props.history.replace('/rent/add', {
+      // 小区名称
+      name: item.communityName,
+      // 小区id
+      id: item.community
+    });
+  }
+
+
+
   // 渲染搜索结果列表
   renderTips = () => {
     const { tipsList } = this.state
 
     return tipsList.map(item => (
-      <li key={item.community} className={styles.tip}>
+      <li key={item.community} className={styles.tip} onClick={() => this.onTipsClick(item)}>
         {item.communityName}
       </li>
     ))
