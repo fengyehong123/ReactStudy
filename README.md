@@ -426,3 +426,12 @@ export default App;
 
 登录的账号: test2
 登录密码: test2
+
+**其他**
+1. 发布房源页面需要自己在地址栏输入 /rent
+
+**react项目修改脚手架配置说明**
+create-react-app中隐藏了webpack的配置,隐藏在`react-scripts`包中
+修改脚手架的webpack的配置共有两种方法
+1. 运行命令`npm run eject`释放webpack配置(注意: 这是一个不可逆操作)
+2. 通过第三方包重写webpack配置(比如:react-app-rewired等)
