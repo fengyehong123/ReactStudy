@@ -59,8 +59,6 @@ import AuthRoute from './components/AuthRoute'
 */
 // 导入路由组件
 import { BrowserRouter, Redirect, Route } from 'react-router-dom'
-// 导入antd-mobile的样式(在入口文件处全局导入一次)
-import 'antd-mobile/dist/antd-mobile.css'
 
 function App() {
   return (

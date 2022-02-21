@@ -435,3 +435,39 @@ create-react-app中隐藏了webpack的配置,隐藏在`react-scripts`包中
 修改脚手架的webpack的配置共有两种方法
 1. 运行命令`npm run eject`释放webpack配置(注意: 这是一个不可逆操作)
 2. 通过第三方包重写webpack配置(比如:react-app-rewired等)
+
+**antd-mobile按需加载**
+1. 打开`antd-mobile`在`create-react-app`中的使用文档
+2. 安装`yarn add react-app-rewired customize-cra`
+3. 修改`package.json`中的scripts
+```javascript
+// 改修前
+"scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+}
+// 改修后
+"scripts": {
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
+    "eject": "react-scripts eject"
+}
+```
+4. 在项目的根目录创建文件: `config-overrides.js`(用于覆盖脚手架的默认配置)
+5. 安装`yarn add babel-plugin-import`插件(用于按需加载组件代码和样式)
+6. 修改`config-overrides.js`文件,配置按需加载功能.
+```javascript
+const { override, fixBabelImports } = require('customize-cra');
+module.exports = override(
+  fixBabelImports('import', {
+    libraryName: 'antd-mobile',
+    style: 'css',
+  }),
+);
+```
+7. 重启项目(`yarn start`)
+8. 移除`index.js`中导入的`antd-mobile`的样式文件
+9. 将`index.css`移动到App后面,让index.css中的页面背景色生效
