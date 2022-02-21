@@ -42,3 +42,9 @@ body,
 .body-fixed {
   overflow: hidden;
 }
+
+/* 动态组件加载时的效果 */
+.route-loading {
+  padding-top: 100px;
+  text-align: center;
+}

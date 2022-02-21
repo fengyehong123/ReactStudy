@@ -1,21 +1,39 @@
-import React from "react";
-// 导入自定义的组件
-import CityList from './pages/CityList'
-import Home from './pages/Home'
-// 导入地图组件
-import Map from './pages/Map'
-// 房源详情组件
-import HouseDetail from './pages/HouseDetail'
-// 导入登录组件
-import Login from './pages/Login'
-// 导入注册组件
-import Registe from './pages/Registe'
-// 导入房源发布组件
-import Rent from './pages/Rent'
-import RentAdd from './pages/Rent/Add'
-import RentSearch from './pages/Rent/Search'
+import React, { lazy, Suspense } from "react";
+// 导入路由组件
+import { BrowserRouter, Redirect, Route } from 'react-router-dom'
 // 导入自定义的路由鉴权组件(只有登录之后才能访问组件)
-import AuthRoute from './components/AuthRoute'
+import AuthRoute from './components/AuthRoute' 
+
+/*
+  因为Home组件,一进入页面就需要显示,因此并不需要动态导入
+*/
+import Home from './pages/Home'
+
+/*
+  使用动态组件的方式导入组件
+  目的: 将代码按照路由进行分割,只有在访问该路由的时候才加载该组件的内容,提高首屏的加载速度
+  实现方式:
+    React.lazy()方法 + import()方法 + Suspense组件
+  React.lazy()的作用:
+    处理动态导入的组件,让其像普通组件一样使用
+  import('组件路径')作用:
+    告诉webpack,这是一个代码分割点,进行代码分割
+  Suspense组件:
+    用来在动态组件加载完成之前,显示一些loading的内容,需要包裹动态组件的内容
+*/
+const CityList = lazy(() => import('./pages/CityList'))
+// 导入地图组件
+const Map = lazy(() => import( './pages/Map'))
+// 房源详情组件
+const HouseDetail = lazy(() => import('./pages/HouseDetail')) 
+// 导入登录组件
+const Login = lazy(() => import('./pages/Login')) 
+// 导入注册组件
+const Registe = lazy(() => import('./pages/Registe')) 
+// 导入房源发布组件
+const Rent = lazy(() => import('./pages/Rent')) 
+const RentAdd = lazy(() => import('./pages/Rent/Add')) 
+const RentSearch = lazy(() => import('./pages/Rent/Search')) 
 
 /*
   ❗❗组件间样式覆盖的问题
@@ -57,50 +75,53 @@ import AuthRoute from './components/AuthRoute'
           不推荐: .narbar .test {}
         3. 对于组件中已经有的全局样式(比如 .am-navbar-title),需要使用:global()来指定
 */
-// 导入路由组件
-import { BrowserRouter, Redirect, Route } from 'react-router-dom'
 
 function App() {
   return (
     // 要想使用路由,需要使用Router包裹根组件
     <BrowserRouter>
-      <div className="App">
+      {/* 
+        需要配合Suspense组件包裹需要动态加载的组件
+        当动态导入的组件正在加载中的时候,会加载fallback中的加载效果
+      */}
+      <Suspense fallback={<div className="route-loading">loading...</div>}>
+        <div className="App">
+          {/* 配置路由所对应的组件 */} 
+          {/* 
+            路由重定向,当我们访问默认地址的时候,重定向到/home路由,显示Index组件
+            render: 是一个函数prop,用于指定要渲染的内容
+            Redirect组件用于实现路由重定向,to属性指定要跳转到的路由地址
+            ⏹有Tabbar的组件需要放到Home组件中,在Home组件中使用子路由
+          */}
+          <Route exact path="/" render={() => <Redirect to="/home" />}></Route>
+          <Route path="/home" component={Home}></Route>
 
-        {/* 配置路由所对应的组件 */} 
-        {/* 
-          路由重定向,当我们访问默认地址的时候,重定向到/home路由,显示Index组件
-          render: 是一个函数prop,用于指定要渲染的内容
-          Redirect组件用于实现路由重定向,to属性指定要跳转到的路由地址
-          ⏹有Tabbar的组件需要放到Home组件中,在Home组件中使用子路由
-        */}
-        <Route exact path="/" render={() => <Redirect to="/home" />}></Route>
-        <Route path="/home" component={Home}></Route>
+          {/* ⏹没有Tabbar的组件和Home组件平级 */}
+          <Route path="/citylist" component={CityList}></Route>
+          {/* 
+            ❗❗只有被路由直接渲染的组件才能通过props获取到路由信息,例如Map组价
+              Map中使用的其他非直接被路由渲染的组件无法直接从props中获取到路由信息
+              必须要使用withRouter高阶组件才可以
+          */}
+          <Route path="/map" component={Map}></Route>
 
-        {/* ⏹没有Tabbar的组件和Home组件平级 */}
-        <Route path="/citylist" component={CityList}></Route>
-        {/* 
-          ❗❗只有被路由直接渲染的组件才能通过props获取到路由信息,例如Map组价
-            Map中使用的其他非直接被路由渲染的组件无法直接从props中获取到路由信息
-            必须要使用withRouter高阶组件才可以
-        */}
-        <Route path="/map" component={Map}></Route>
+          {/* 
+            房源详情的路由规则
+            :id代表路由参数,代表不固定的参数
+            HouseDetail组件中使用此路由参数(也就是房屋的id)来获取房屋的详情数据
+          */}
+          <Route path="/detail/:id" component={HouseDetail}></Route>
+          {/* 登录组件的路由地址 */}
+          <Route path="/login" component={Login}></Route>
+          {/* 注册组件的路由地址 */}
+          <Route path="/registe" component={Registe}></Route>
 
-        {/* 
-          房源详情的路由规则
-          :id代表路由参数,代表不固定的参数
-          HouseDetail组件中使用此路由参数(也就是房屋的id)来获取房屋的详情数据
-        */}
-        <Route path="/detail/:id" component={HouseDetail}></Route>
-        {/* 登录组件的路由地址 */}
-        <Route path="/login" component={Login}></Route>
-        {/* 注册组件的路由地址 */}
-        <Route path="/registe" component={Registe}></Route>
-        
-        {/* 配置登录后才能访问的页面 */}
-        <AuthRoute exact path='/rent' component={Rent} />
-        <AuthRoute path='/rent/add' component={RentAdd} />
-        <AuthRoute path='/rent/search' component={RentSearch} />
-      </div>
+          {/* 配置登录后才能访问的页面 */}
+          <AuthRoute exact path='/rent' component={Rent} />
+          <AuthRoute path='/rent/add' component={RentAdd} />
+          <AuthRoute path='/rent/search' component={RentSearch} />
+        </div>
+      </Suspense>
     </BrowserRouter>
   );
 }

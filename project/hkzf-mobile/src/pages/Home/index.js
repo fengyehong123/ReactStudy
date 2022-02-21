@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { lazy } from 'react'
 // 导入路由
 import { Route } from 'react-router-dom'
 // 导入 TabBar
@@ -7,12 +7,21 @@ import { TabBar } from 'antd-mobile'
 // 导入组件自己的样式文件
 import './index.css'
 
-// 导入TabBar菜单的组件
-import News from '../News'
+/*
+  导入TabBar菜单的组件
+  因为Index组件,一进入页面就需要访问,因此并不进行动态导入
+*/ 
 import Index from '../Index'
+
+/*
+  动态导入组件
+  因为在App.js中已经配置了Suspense了
+  所以此处不需要再用Suspense组件包裹动态导入的组件了
+*/
+const News = lazy(() => import('../News'))
 // HouseList组件是后与当前组件的样式导入的,HouseList组件的样式会覆盖当前组件的样式
-import HouseList from '../HouseList'
-import Profile from '../Profile'
+const HouseList = lazy(() => import('../HouseList'))
+const Profile = lazy(() => import('../Profile'))
 
 // TabBar 数据
 const tabItems = [
