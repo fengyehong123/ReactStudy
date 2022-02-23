@@ -201,6 +201,7 @@ export default class HouseDetail extends Component {
           text: '去登录',
           // 点击登录按钮之后,跳转到登录页面
           onPress: () => {
+            console.log(location);
             return history.push('/login', {from: location})
           }
         }
